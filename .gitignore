@@ -5,3 +5,4 @@ dev-proxy.config.json
 .env
 .env.local
 .env.*.local
+.github/workflows/
