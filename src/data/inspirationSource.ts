@@ -59,6 +59,26 @@ export function getInspirationThumbUrl(id: string) {
   return `${import.meta.env.BASE_URL}inspiration/${id}.webp`
 }
 
+const JSDELIVR_PREFIX = 'https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/'
+const RAW_PREFIX = 'https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/'
+
+/**
+ * 远程原图候选地址（jsDelivr 优先，失败回退 GitHub raw）。
+ * 用于点击缩略图后放大展示，缩略图只有 480px 宽，不适合大图。
+ */
+export function getInspirationOriginalUrls(item: InspirationPrompt): string[] {
+  if (!item.imageUrl) return []
+  const list = [item.imageUrl]
+  const rawFallback = item.imageUrl.replace(JSDELIVR_PREFIX, RAW_PREFIX)
+  if (rawFallback !== item.imageUrl) list.push(rawFallback)
+  return list
+}
+
+/** 缩略图候选地址：本地 WebP → jsDelivr → raw */
+export function getInspirationThumbUrls(item: InspirationPrompt): string[] {
+  return [getInspirationThumbUrl(item.id), ...getInspirationOriginalUrls(item)]
+}
+
 let cache: InspirationPrompt[] | null = null
 let pending: Promise<InspirationPrompt[]> | null = null
 

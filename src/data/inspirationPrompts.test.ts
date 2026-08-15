@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { INSPIRATION_PROMPT_COUNT, INSPIRATION_TAGS, getInspirationThumbUrl, loadInspirationPrompts } from './inspirationSource'
+import {
+  INSPIRATION_PROMPT_COUNT,
+  INSPIRATION_TAGS,
+  getInspirationOriginalUrls,
+  getInspirationThumbUrl,
+  getInspirationThumbUrls,
+  loadInspirationPrompts,
+} from './inspirationSource'
 import { INSPIRATION_PROMPTS } from './inspirationPrompts'
 
 /** public/inspiration 下的内置缩略图清单（构建期静态展开） */
@@ -36,5 +43,21 @@ describe('inspiration prompts data', () => {
       expect(thumbNames.has(`${item.id}.webp`)).toBe(true)
       expect(getInspirationThumbUrl(item.id)).toContain(`inspiration/${item.id}.webp`)
     }
+  })
+
+  it('builds thumbnail and original url fallbacks in priority order', () => {
+    const withImage = INSPIRATION_PROMPTS.find((item) => item.imageUrl)
+    expect(withImage).toBeDefined()
+    if (!withImage) return
+
+    const originals = getInspirationOriginalUrls(withImage)
+    expect(originals[0]).toBe(withImage.imageUrl)
+    expect(originals[1]).toMatch(/^https:\/\/raw\.githubusercontent\.com\/jamez-bondos\/awesome-gpt4o-images\/main\//)
+
+    const thumbs = getInspirationThumbUrls(withImage)
+    expect(thumbs[0]).toBe(getInspirationThumbUrl(withImage.id))
+    expect(thumbs.slice(1)).toEqual(originals)
+
+    expect(getInspirationOriginalUrls({ ...withImage, imageUrl: undefined })).toEqual([])
   })
 })

@@ -15,13 +15,14 @@ import {
   INSPIRATION_PROMPT_COUNT,
   INSPIRATION_SOURCE,
   INSPIRATION_TAGS,
-  getInspirationThumbUrl,
+  getInspirationThumbUrls,
   getLoadedInspirationPrompts,
   loadInspirationPrompts,
   type InspirationPrompt,
 } from '../../data/inspirationSource'
 import type { QuickPhrase, SavedPrompt } from '../../types'
 import { CloseIcon, EditIcon, PlusIcon, TrashIcon } from '../icons'
+import InspirationPreview from './InspirationPreview'
 
 const TABS: Array<{ key: PromptLibraryTab; label: string }> = [
   { key: 'saved', label: '我的提示词' },
@@ -49,20 +50,9 @@ const smallButtonClass = 'rounded-lg px-2 py-1 text-xs text-gray-500 transition-
 
 const primaryButtonClass = 'rounded-xl bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50'
 
-function InspirationThumb({ item }: { item: InspirationPrompt }) {
+function InspirationThumb({ item, onZoom }: { item: InspirationPrompt; onZoom: () => void }) {
   // 优先用随应用分发的本地 WebP 缩略图（约 20KB，秒开）；缺失时才回退远程原图
-  const sources = useMemo(() => {
-    const list = [getInspirationThumbUrl(item.id)]
-    if (item.imageUrl) {
-      list.push(item.imageUrl)
-      const rawFallback = item.imageUrl.replace(
-        'https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/',
-        'https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/',
-      )
-      if (rawFallback !== item.imageUrl) list.push(rawFallback)
-    }
-    return list
-  }, [item.id, item.imageUrl])
+  const sources = useMemo(() => getInspirationThumbUrls(item), [item])
   const [sourceIndex, setSourceIndex] = useState(0)
 
   if (sourceIndex >= sources.length) {
@@ -74,16 +64,28 @@ function InspirationThumb({ item }: { item: InspirationPrompt }) {
   }
 
   return (
-    <img
-      key={sources[sourceIndex]}
-      src={sources[sourceIndex]}
-      alt={item.title}
-      loading="lazy"
-      decoding="async"
-      referrerPolicy="no-referrer"
-      onError={() => setSourceIndex((index) => index + 1)}
-      className="h-32 w-full rounded-xl bg-gray-100 object-cover dark:bg-white/[0.04]"
-    />
+    <button
+      type="button"
+      onClick={onZoom}
+      className="group relative block h-32 w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-white/[0.04]"
+      aria-label={`放大查看「${item.title}」`}
+    >
+      <img
+        key={sources[sourceIndex]}
+        src={sources[sourceIndex]}
+        alt={item.title}
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={() => setSourceIndex((index) => index + 1)}
+        className="h-full w-full object-cover"
+      />
+      <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded-full bg-black/45 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 8v6m-3-3h6m4 0a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </span>
+    </button>
   )
 }
 
@@ -157,10 +159,13 @@ export default function PromptLibraryModal() {
   const setConfirmDialog = useStore((s) => s.setConfirmDialog)
 
   const modalRef = useRef<HTMLDivElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
   const mouseDownTargetRef = useRef<EventTarget | null>(null)
+  // 弹窗本体和大图预览层内部都允许滚动，其余区域锁定
+  const scrollBoundaryRefs = useMemo(() => [modalRef, previewRef], [])
 
   const open = activeTab != null
-  usePreventBackgroundScroll(open, modalRef)
+  usePreventBackgroundScroll(open, scrollBoundaryRefs)
   useCloseOnEscape(open, closePromptLibrary)
 
   const [savedQuery, setSavedQuery] = useState('')
@@ -181,6 +186,7 @@ export default function PromptLibraryModal() {
   const [expandedInspirationId, setExpandedInspirationId] = useState<string | null>(null)
   const [inspirationData, setInspirationData] = useState<InspirationPrompt[] | null>(() => getLoadedInspirationPrompts())
   const [inspirationLoadFailed, setInspirationLoadFailed] = useState(false)
+  const [previewId, setPreviewId] = useState<string | null>(null)
 
   // 灵感画廊数据约 180KB，只在切到该 Tab 时动态加载，避免拖慢首屏
   useEffect(() => {
@@ -205,7 +211,13 @@ export default function PromptLibraryModal() {
     setEditingId(null)
     setPhraseEditingId(null)
     setExpandedInspirationId(null)
+    setPreviewId(null)
   }, [open])
+
+  // 离开灵感画廊 Tab 时收起大图预览
+  useEffect(() => {
+    if (activeTab !== 'inspiration') setPreviewId(null)
+  }, [activeTab])
 
   useEffect(() => {
     setInspirationLimit(INSPIRATION_PAGE_SIZE)
@@ -336,6 +348,7 @@ export default function PromptLibraryModal() {
   }
 
   return (
+    <>
     <div
       data-no-drag-select
       className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4"
@@ -585,7 +598,7 @@ export default function PromptLibraryModal() {
                     const promptText = item.prompt
                     return (
                       <div key={item.id} className="flex flex-col gap-2 rounded-2xl border border-gray-200/70 bg-white/60 p-3 dark:border-white/[0.08] dark:bg-white/[0.03]">
-                        <InspirationThumb item={item} />
+                        <InspirationThumb item={item} onZoom={() => setPreviewId(item.id)} />
                         <div className="min-w-0">
                           <div className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{item.title}</div>
                           <div className={`mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-gray-500 dark:text-gray-400 ${expanded ? '' : 'line-clamp-3'}`}>
@@ -668,12 +681,28 @@ export default function PromptLibraryModal() {
                 <a href={INSPIRATION_SOURCE.licenseUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400">
                   {INSPIRATION_SOURCE.license}
                 </a>
-                ）。示例缩略图由原仓库示例图压缩后随应用内置，点标题可查看原案例。
+                ）。示例缩略图由原仓库示例图压缩后随应用内置，点缩略图可放大查看原图。
               </p>
             </div>
           </>
         )}
       </div>
     </div>
+
+    {/* 点击缩略图后的大图预览层，盖在提示词库之上 */}
+    {previewId && (
+      <InspirationPreview
+        containerRef={previewRef}
+        items={visibleInspiration}
+        activeId={previewId}
+        onActiveIdChange={setPreviewId}
+        onClose={() => setPreviewId(null)}
+        onUse={(item, promptText) => {
+          setPreviewId(null)
+          useInspiration(item, promptText)
+        }}
+      />
+    )}
+    </>
   )
 }
