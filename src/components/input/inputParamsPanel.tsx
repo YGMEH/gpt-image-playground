@@ -2,6 +2,7 @@ import type { ApiProfile, TaskParams } from '../../types'
 import { dismissAllTooltips } from '../../lib/tooltipDismiss'
 import Select from '../Select'
 import ButtonTooltip from './buttonTooltip'
+import { PromptLibraryIcon } from '../icons'
 
 interface HintTooltipState {
   visible: boolean
@@ -41,6 +42,7 @@ export default function InputParamsPanel({
   streamConcurrentHint,
   sizeHint,
   onOpenSizePicker,
+  onOpenPromptLibrary,
 }: {
   cols: string
   params: TaskParams
@@ -81,6 +83,7 @@ export default function InputParamsPanel({
   sizeHint: HintTooltipState
   qualityHint: HintTooltipState
   onOpenSizePicker: () => void
+  onOpenPromptLibrary: () => void
 }) {
   return (
     <div className={`grid ${cols} gap-2 text-xs flex-1`}>
@@ -203,6 +206,18 @@ export default function InputParamsPanel({
         <ButtonTooltip visible={nLimitHint.visible} text={nLimitHintText} />
         <ButtonTooltip visible={streamConcurrentByN && streamConcurrentHint.visible && !nLimitHint.visible} text="数量大于 1 时会将多图生成拆分为并发单图" />
       </label>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-gray-400 dark:text-gray-500 ml-1">提示词库</span>
+        <button
+          type="button"
+          onClick={() => { dismissAllTooltips(); onOpenPromptLibrary() }}
+          className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] focus:outline-none text-xs transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm"
+          aria-label="打开提示词库与灵感画廊"
+        >
+          <PromptLibraryIcon className="h-3.5 w-3.5 shrink-0" />
+          打开
+        </button>
+      </div>
     </div>
   )
 }

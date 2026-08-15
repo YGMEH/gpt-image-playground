@@ -24,7 +24,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@balconychy",
     "authorLink": "https://x.com/balconychy",
     "sourceLink": "https://x.com/balconychy/status/1909417750587486469",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/1/example_proposal_scene_q_realistic.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/1/example_proposal_scene_q_realistic.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/1",
     "tags": [
       "3D/手办",
@@ -42,7 +42,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1908238003169903060",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/2/example_polaroid_breakout.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/2/example_polaroid_breakout.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/2",
     "tags": [
       "3D/手办",
@@ -59,7 +59,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1905251524248248650",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/3/example_vintage_poster.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/3/example_vintage_poster.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/3",
     "tags": [
       "人像/写真",
@@ -77,7 +77,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@balconychy",
     "authorLink": "https://x.com/balconychy",
     "sourceLink": "https://x.com/balconychy/status/1909418699150237917",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/4/example_q_chinese_wedding.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/4/example_q_chinese_wedding.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/4",
     "tags": [
       "3D/手办",
@@ -96,7 +96,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "AnimeAI",
     "authorLink": "https://animeai.online",
     "sourceLink": "https://animeai.online/#demo-gallery",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/5/ghibli-style-mona-lisa.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/5/ghibli-style-mona-lisa.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/5",
     "tags": [
       "Q版/卡通"
@@ -113,7 +113,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1908910838636765204",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/6/example_portal_crossing_handhold.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/6/example_portal_crossing_handhold.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/6",
     "tags": [
       "3D/手办",
@@ -131,7 +131,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1910698005193515370",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/7/example_personalized_room.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/7/example_personalized_room.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/7",
     "tags": [
       "3D/手办",
@@ -149,7 +149,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1910644499354968091",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/8/example_lego_collectible.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/8/example_lego_collectible.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/8",
     "tags": [
       "3D/手办",
@@ -167,7 +167,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1921906728763105394",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/9/minimalist_futurist_poster.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/9/minimalist_futurist_poster.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/9",
     "tags": [
       "3D/手办",
@@ -184,7 +184,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1910514811756065159",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/10/example_maga_hat_cartoon.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/10/example_maga_hat_cartoon.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/10",
     "tags": [
       "插画/漫画",
@@ -201,7 +201,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1904978767090524372",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/11/example_ps2_gta_shrek.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/11/example_ps2_gta_shrek.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/11",
     "tags": [
       "海报/平面"
@@ -218,7 +218,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1909332895115714835",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/12/example_3d_collectible_couple_box.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/12/example_3d_collectible_couple_box.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/12",
     "tags": [
       "3D/手办",
@@ -236,7 +236,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1908194518345678865",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/13/example_photo_to_3d_q.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/13/example_photo_to_3d_q.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/13",
     "tags": [
       "3D/手办",
@@ -255,7 +255,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1909047547563213145",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/14/example_one_piece_figure_creation.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/14/example_one_piece_figure_creation.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/14",
     "tags": [
       "3D/手办",
@@ -272,7 +272,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1905287637084274742",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/15/example_gpt_involution_poster.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/15/example_gpt_involution_poster.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/15",
     "tags": [
       "海报/平面"
@@ -289,7 +289,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@Alittlefatwhale",
     "authorLink": "https://x.com/Alittlefatwhale",
     "sourceLink": "https://x.com/Alittlefatwhale/status/1922512847030124905",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/16/anime_style_badge.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/16/anime_style_badge.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/16",
     "tags": [
       "其他风格"
@@ -306,7 +306,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@Gdgtify",
     "authorLink": "https://x.com/Gdgtify",
     "sourceLink": "https://x.com/Gdgtify/status/1925176250626159053",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/17/retro_crt_computer_boot_screen.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/17/retro_crt_computer_boot_screen.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/17",
     "tags": [
       "插画/漫画",
@@ -324,7 +324,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "AnimeAI",
     "authorLink": "https://animeai.online",
     "sourceLink": "https://animeai.online/#demo-gallery",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/18/pixar-style-godfather-scene.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/18/pixar-style-godfather-scene.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/18",
     "tags": [
       "3D/手办",
@@ -342,7 +342,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@TheRelianceAI",
     "authorLink": "https://x.com/TheRelianceAI",
     "sourceLink": "https://x.com/TheRelianceAI/status/1925223613055017251",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/19/country_diorama_in_toy_box.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/19/country_diorama_in_toy_box.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/19",
     "tags": [
       "3D/手办",
@@ -360,7 +360,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1920994118580183316",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/20/action_figure_and_real_person_in_frame.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/20/action_figure_and_real_person_in_frame.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/20",
     "tags": [
       "3D/手办"
@@ -378,7 +378,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@leon_yuan2001",
     "authorLink": "https://x.com/leon_yuan2001",
     "sourceLink": "https://x.com/leon_yuan2001/status/1923712069209293014",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/21/chibi_character_sticker_pack.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/21/chibi_character_sticker_pack.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/21",
     "tags": [
       "Q版/卡通",
@@ -395,7 +395,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@balconychy",
     "authorLink": "https://x.com/balconychy",
     "sourceLink": "https://x.com/balconychy/status/1905507936526627078",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/22/example_notebook_promo.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/22/example_notebook_promo.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/22",
     "tags": [
       "海报/平面",
@@ -413,7 +413,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@balconychy",
     "authorLink": "https://x.com/balconychy",
     "sourceLink": "https://x.com/balconychy/status/1909916265067557299",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/23/example_titanic_q_realistic.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/23/example_titanic_q_realistic.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/23",
     "tags": [
       "3D/手办",
@@ -431,7 +431,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1909047283485671924",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/24/funko-pop-james-bond-figure-and-box.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/24/funko-pop-james-bond-figure-and-box.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/24",
     "tags": [
       "Q版/卡通",
@@ -449,7 +449,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@0xdlk",
     "authorLink": "https://x.com/0xdlk",
     "sourceLink": "https://x.com/0xdlk/status/1906843247432929642",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/25/example_minimalist_3d_toilet.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/25/example_minimalist_3d_toilet.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/25",
     "tags": [
       "3D/手办",
@@ -467,7 +467,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1909542765857587310",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/26/example_master_oats_ad.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/26/example_master_oats_ad.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/26",
     "tags": [
       "3D/手办",
@@ -485,7 +485,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1909800530739679488",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/27/example_chibi_emoji_pack.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/27/example_chibi_emoji_pack.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/27",
     "tags": [
       "Q版/卡通",
@@ -503,7 +503,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1908044836953108490",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/28/example_flat_sticker_pearl_earring.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/28/example_flat_sticker_pearl_earring.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/28",
     "tags": [
       "3D/手办",
@@ -521,7 +521,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1909892294217781714",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/29/example_pearl_earring_ootd.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/29/example_pearl_earring_ootd.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/29",
     "tags": [
       "3D/手办",
@@ -538,7 +538,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1905020833451348283",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/30/example_35mm_moscow_flying_island.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/30/example_35mm_moscow_flying_island.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/30",
     "tags": [
       "像素/复古"
@@ -554,7 +554,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@richardchang",
     "authorLink": "https://x.com/richardchang",
     "sourceLink": "https://x.com/richardchang/status/1909086122959139312",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/31/example_naruto_stickers.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/31/example_naruto_stickers.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/31",
     "tags": [
       "海报/平面"
@@ -571,7 +571,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1923264349050675329",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/32/3d_papercraft_popup_book.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/32/3d_papercraft_popup_book.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/32",
     "tags": [
       "3D/手办",
@@ -589,7 +589,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@balconychy",
     "authorLink": "https://x.com/balconychy",
     "sourceLink": "https://x.com/balconychy/status/1909426314643222595",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/33/example_family_wedding_photo_q.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/33/example_family_wedding_photo_q.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/33",
     "tags": [
       "3D/手办",
@@ -606,7 +606,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1907903480678985784",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/34/example_hand_drawn_infographic_cognition.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/34/example_hand_drawn_infographic_cognition.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/34",
     "tags": [
       "插画/漫画",
@@ -624,7 +624,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "gizakdag",
     "authorLink": "https://x.com/gizakdag",
     "sourceLink": "https://x.com/gizakdag/status/1911075302941622512",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/35/example_fluffy_pumpkin.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/35/example_fluffy_pumpkin.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/35",
     "tags": [
       "3D/手办",
@@ -641,7 +641,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1907131027253772399",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/36/example_minimalist_3d_toilet_txt.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/36/example_minimalist_3d_toilet_txt.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/36",
     "tags": [
       "3D/手办",
@@ -659,7 +659,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@aziz4ai",
     "authorLink": "https://x.com/aziz4ai",
     "sourceLink": "https://x.com/aziz4ai/status/1925301120252924356",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/37/pastel_power_3d_ads.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/37/pastel_power_3d_ads.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/37",
     "tags": [
       "3D/手办",
@@ -676,7 +676,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1907870919852179850",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/38/example_hand_drawn_infographic.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/38/example_hand_drawn_infographic.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/38",
     "tags": [
       "插画/漫画",
@@ -693,7 +693,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1905103477879267823",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/39/example_fantasy_computer_head_portal.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/39/example_fantasy_computer_head_portal.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/39",
     "tags": [
       "插画/漫画",
@@ -711,7 +711,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@hellokaton",
     "authorLink": "https://x.com/hellokaton",
     "sourceLink": "https://x.com/hellokaton/status/1910900979194646959",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/40/example_two_panel_manga_president.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/40/example_two_panel_manga_president.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/40",
     "tags": [
       "插画/漫画",
@@ -729,7 +729,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1911609122547449886",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/41/example_miniature_journey_west.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/41/example_miniature_journey_west.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/41",
     "tags": [
       "3D/手办",
@@ -747,7 +747,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@balconychy",
     "authorLink": "https://x.com/balconychy",
     "sourceLink": "https://x.com/balconychy/status/1909908568129655248",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/42/example_3d_q_snowglobe_couple.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/42/example_3d_q_snowglobe_couple.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/42",
     "tags": [
       "3D/手办",
@@ -765,7 +765,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1911669883315818497",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/43/example_matryoshka_pearl_earring.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/43/example_matryoshka_pearl_earring.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/43",
     "tags": [
       "Q版/卡通"
@@ -783,7 +783,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@berryxia_ai",
     "authorLink": "https://x.com/berryxia_ai",
     "sourceLink": "https://x.com/berryxia_ai/status/1911334046724165905",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/44/example_rpg_card_designer.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/44/example_rpg_card_designer.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/44",
     "tags": [
       "3D/手办",
@@ -801,7 +801,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1911988003729203648",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/45/example_university_mascot_npu.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/45/example_university_mascot_npu.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/45",
     "tags": [
       "3D/手办",
@@ -818,7 +818,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1911724629460455896",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/46/example_happy_capsule.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/46/example_happy_capsule.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/46",
     "tags": [
       "海报/平面"
@@ -835,7 +835,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1911368319212408926",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/47/example_esc_keycap_diorama.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/47/example_esc_keycap_diorama.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/47",
     "tags": [
       "3D/手办",
@@ -854,7 +854,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@BrettFromDJ",
     "authorLink": "https://x.com/BrettFromDJ",
     "sourceLink": "https://x.com/BrettFromDJ/status/1910387413404234076",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/48/example_voxel_icon.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/48/example_voxel_icon.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/48",
     "tags": [
       "3D/手办"
@@ -870,7 +870,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1912536019905233194",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/49/example_fashion_design_cover.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/49/example_fashion_design_cover.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/49",
     "tags": [
       "人像/写真",
@@ -888,7 +888,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@op7418",
     "authorLink": "https://x.com/op7418",
     "sourceLink": "https://x.com/op7418/status/1912782048160542886",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/50/example_lara_croft_card_break.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/50/example_lara_croft_card_break.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/50",
     "tags": [
       "插画/漫画",
@@ -906,7 +906,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@M_w14_",
     "authorLink": "https://x.com/M_w14_",
     "sourceLink": "https://x.com/M_w14_/status/1912146666410459618",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/51/example_passport_stamp_rome.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/51/example_passport_stamp_rome.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/51",
     "tags": [
       "其他风格"
@@ -923,7 +923,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1912521263085482464",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/52/example_paper_craft_emoji_fire.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/52/example_paper_craft_emoji_fire.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/52",
     "tags": [
       "3D/手办"
@@ -940,7 +940,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@gizakdag",
     "authorLink": "https://x.com/gizakdag",
     "sourceLink": "https://x.com/gizakdag/status/1912858535643197927",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/53/example_emoji_cushion_pleading.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/53/example_emoji_cushion_pleading.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/53",
     "tags": [
       "3D/手办",
@@ -958,7 +958,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@jiamimaodashu",
     "authorLink": "https://x.com/jiamimaodashu",
     "sourceLink": "https://x.com/jiamimaodashu/status/1912653073190879410",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/54/example_ordinary_selfie_eason_nicholas.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/54/example_ordinary_selfie_eason_nicholas.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/54",
     "tags": [
       "人像/写真"
@@ -975,7 +975,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@azed_ai",
     "authorLink": "https://x.com/azed_ai",
     "sourceLink": "https://x.com/azed_ai/status/1923739813414568075",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/55/cute_plant_planter.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/55/cute_plant_planter.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/55",
     "tags": [
       "产品/电商"
@@ -992,7 +992,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1913759515700285569",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/56/example_miniature_starbucks_cup_building.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/56/example_miniature_starbucks_cup_building.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/56",
     "tags": [
       "3D/手办",
@@ -1010,7 +1010,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1913654508330058064",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/57/example_8bit_pixel_beer.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/57/example_8bit_pixel_beer.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/57",
     "tags": [
       "插画/漫画",
@@ -1028,7 +1028,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1913628737872027805",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/58/example_cloud_art_dragon_great_wall.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/58/example_cloud_art_dragon_great_wall.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/58",
     "tags": [
       "插画/漫画",
@@ -1046,7 +1046,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@michaelrabone",
     "authorLink": "https://x.com/michaelrabone",
     "sourceLink": "https://x.com/michaelrabone/status/1913865394139316291",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/59/example_vector_poster_london.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/59/example_vector_poster_london.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/59",
     "tags": [
       "插画/漫画",
@@ -1064,7 +1064,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@gizakdag",
     "authorLink": "https://x.com/gizakdag",
     "sourceLink": "https://x.com/gizakdag/status/1913925062568144924",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/60/example_tufted_rug_star_emoji.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/60/example_tufted_rug_star_emoji.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/60",
     "tags": [
       "插画/漫画",
@@ -1081,7 +1081,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1914299716394778713",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/61/example_fake_tweet_einstein.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/61/example_fake_tweet_einstein.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/61",
     "tags": [
       "人像/写真"
@@ -1098,7 +1098,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@gnrlyxyz",
     "authorLink": "https://x.com/gnrlyxyz",
     "sourceLink": "https://x.com/gnrlyxyz/status/1914303110853583302",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/62/example_enamel_pins_einstein.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/62/example_enamel_pins_einstein.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/62",
     "tags": [
       "其他风格"
@@ -1115,7 +1115,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1914574278911000967",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/63/example_ice_cream_emoji_strawberry.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/63/example_ice_cream_emoji_strawberry.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/63",
     "tags": [
       "3D/手办",
@@ -1133,7 +1133,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@f-is-h",
     "authorLink": "https://github.com/f-is-h",
     "sourceLink": "https://github.com/f-is-h/f-is-h/blob/main/images/streampank-fish-4.png",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/64/example_steampunk_fish.jpg",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/64/example_steampunk_fish.jpg",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/64",
     "tags": [
       "人像/写真"
@@ -1149,7 +1149,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@madpencil_",
     "authorLink": "https://x.com/madpencil_",
     "sourceLink": "https://x.com/madpencil_/status/1920037538372128998",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/65/surreal-underwater-scene-popsicle.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/65/surreal-underwater-scene-popsicle.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/65",
     "tags": [
       "产品/电商",
@@ -1167,7 +1167,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1914864217867608175",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/66/example_silk_creation_universe.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/66/example_silk_creation_universe.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/66",
     "tags": [
       "3D/手办"
@@ -1183,7 +1183,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1913648013144137840",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/67/example_Ultra_realistic_3D_game.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/67/example_Ultra_realistic_3D_game.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/67",
     "tags": [
       "3D/手办",
@@ -1201,7 +1201,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@hewarsaber",
     "authorLink": "https://x.com/hewarsaber",
     "sourceLink": "https://x.com/hewarsaber/status/1912933875166171515",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/68/example_trading_card_logo_tesla.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/68/example_trading_card_logo_tesla.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/68",
     "tags": [
       "3D/手办",
@@ -1219,7 +1219,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1915417277953962048",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/69/example_silhouette_art.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/69/example_silhouette_art.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/69",
     "tags": [
       "插画/漫画"
@@ -1237,7 +1237,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@Anima_Labs",
     "authorLink": "https://x.com/Anima_Labs",
     "sourceLink": "https://x.com/Anima_Labs/status/1915044265895379166",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/70/example_pokemon_strawbit.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/70/example_pokemon_strawbit.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/70",
     "tags": [
       "插画/漫画",
@@ -1254,7 +1254,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "note": "可替換提示詞中的【Cyberpunk】為其他風格或場景，如「未來城市」、「蒸汽朋克」、「中世紀村莊」等。",
     "author": "terry623",
     "authorLink": "https://github.com/terry623",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/71/example_cyberpunk_tilt_shift_miniature.jpg",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/71/example_cyberpunk_tilt_shift_miniature.jpg",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/71",
     "tags": [
       "其他风格"
@@ -1272,7 +1272,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@azed_ai",
     "authorLink": "https://x.com/azed_ai",
     "sourceLink": "https://x.com/azed_ai/status/1915770501705925106",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/72/gold_pendant_necklace.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/72/gold_pendant_necklace.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/72",
     "tags": [
       "产品/电商"
@@ -1290,7 +1290,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@azed_ai",
     "authorLink": "https://x.com/azed_ai",
     "sourceLink": "https://x.com/azed_ai/status/1916521742052503804",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/73/example_keychain_chibi.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/73/example_keychain_chibi.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/73",
     "tags": [
       "Q版/卡通",
@@ -1308,7 +1308,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1916517976414495161",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/74/example_logo_bookshelves.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/74/example_logo_bookshelves.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/74",
     "tags": [
       "插画/漫画",
@@ -1327,7 +1327,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1917042797506662560",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/75/example_instagram_frame_pearl_earring.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/75/example_instagram_frame_pearl_earring.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/75",
     "tags": [
       "3D/手办",
@@ -1345,7 +1345,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "photis (Sora)",
     "authorLink": "https://sora.com/explore?user=user-sydD5ZkXZsDaL0BriQa010dQ",
     "sourceLink": "https://sora.com/g/gen_01jsfxrdpjfpebnyed8yaz42nf",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/76/example_anime_nostalgic_poster.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/76/example_anime_nostalgic_poster.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/76",
     "tags": [
       "插画/漫画",
@@ -1363,7 +1363,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1916530529324699858",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/77/example_crystal_ball_chang_e.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/77/example_crystal_ball_chang_e.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/77",
     "tags": [
       "3D/手办",
@@ -1381,7 +1381,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1917631056980721743",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/78/example_retexture_glass_phone.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/78/example_retexture_glass_phone.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/78",
     "tags": [
       "其他风格"
@@ -1398,7 +1398,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1917713810346872902",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/79/example_lego_shanghai_bund.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/79/example_lego_shanghai_bund.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/79",
     "tags": [
       "3D/手办",
@@ -1416,7 +1416,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1915696926596415492",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/80/example_business_card_code_style.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/80/example_business_card_code_style.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/80",
     "tags": [
       "海报/平面",
@@ -1434,7 +1434,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@azed_ai",
     "authorLink": "https://x.com/azed_ai",
     "sourceLink": "https://x.com/azed_ai/status/1917948899098243407",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/81/example.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/81/example.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/81",
     "tags": [
       "3D/手办"
@@ -1451,7 +1451,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1917988595228438771",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/82/example.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/82/example.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/82",
     "tags": [
       "3D/手办",
@@ -1469,7 +1469,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1914644426334314545",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/83/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/83/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/83",
     "tags": [
       "插画/漫画"
@@ -1486,7 +1486,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1918525296577327574",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/84/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/84/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/84",
     "tags": [
       "Q版/卡通",
@@ -1504,7 +1504,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1917444534239191544",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/85/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/85/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/85",
     "tags": [
       "插画/漫画",
@@ -1522,7 +1522,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "rezzycheck (Sora)",
     "authorLink": "https://sora.com/explore?user=rezzycheck",
     "sourceLink": "https://sora.com/g/gen_01jtc9btfzef080z31v8w9rtbw",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/86/double_exposure.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/86/double_exposure.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/86",
     "tags": [
       "人像/写真"
@@ -1539,7 +1539,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1918529055340576812",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/87/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/87/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/87",
     "tags": [
       "其他风格"
@@ -1556,7 +1556,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1919522110395080838",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/88/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/88/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/88",
     "tags": [
       "插画/漫画"
@@ -1573,7 +1573,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1919398870867440124",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/89/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/89/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/89",
     "tags": [
       "3D/手办",
@@ -1591,7 +1591,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1918291652210311278",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/90/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/90/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/90",
     "tags": [
       "3D/手办",
@@ -1609,7 +1609,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1919701229363466328",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/91/case.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/91/case.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/91",
     "tags": [
       "场景/风景"
@@ -1627,7 +1627,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1920355982703509588",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/92/perspective-3d-pop-out-effect.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/92/perspective-3d-pop-out-effect.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/92",
     "tags": [
       "3D/手办",
@@ -1646,7 +1646,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@egeberkina",
     "authorLink": "https://x.com/egeberkina",
     "sourceLink": "https://x.com/egeberkina/status/1920448389960909085",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/93/glass_retexturing.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/93/glass_retexturing.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/93",
     "tags": [
       "3D/手办",
@@ -1664,7 +1664,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@berryxia_ai",
     "authorLink": "https://x.com/berryxia_ai",
     "sourceLink": "https://x.com/berryxia_ai/status/1920795648946782583",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/94/three_animals_selfie_at_landmark.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/94/three_animals_selfie_at_landmark.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/94",
     "tags": [
       "Q版/卡通",
@@ -1683,7 +1683,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@thisdudelikesAI",
     "authorLink": "https://x.com/thisdudelikesAI",
     "sourceLink": "https://x.com/thisdudelikesAI/status/1920433372243136730",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/95/selfie-to-bobblehead-generator.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/95/selfie-to-bobblehead-generator.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/95",
     "tags": [
       "Q版/卡通",
@@ -1701,7 +1701,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@dotey",
     "authorLink": "https://x.com/dotey",
     "sourceLink": "https://x.com/dotey/status/1920851135516082246",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/96/custom-anime-figure-from-photo.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/96/custom-anime-figure-from-photo.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/96",
     "tags": [
       "3D/手办",
@@ -1719,7 +1719,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1921148024861938077",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/97/cute_cozy_knitted_doll.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/97/cute_cozy_knitted_doll.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/97",
     "tags": [
       "3D/手办",
@@ -1737,7 +1737,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@umesh_ai",
     "authorLink": "https://x.com/umesh_ai",
     "sourceLink": "https://x.com/umesh_ai/status/1921487841634156999",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/98/blurred-silhouette-frosted-glass.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/98/blurred-silhouette-frosted-glass.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/98",
     "tags": [
       "插画/漫画",
@@ -1754,7 +1754,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@ZHO_ZHO_ZHO",
     "authorLink": "https://x.com/ZHO_ZHO_ZHO",
     "sourceLink": "https://x.com/ZHO_ZHO_ZHO/status/1922150692145283299",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/99/harry-potter-black-white-portrait-art.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/99/harry-potter-black-white-portrait-art.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/99",
     "tags": [
       "插画/漫画",
@@ -1772,7 +1772,7 @@ export const INSPIRATION_PROMPTS: InspirationPrompt[] = [
     "author": "@azed_ai",
     "authorLink": "https://x.com/azed_ai",
     "sourceLink": "https://x.com/azed_ai/status/1923016036120658122",
-    "imageUrl": "https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/cases/100/creative-ad-real-object-hand-drawn-doodle.png",
+    "imageUrl": "https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/cases/100/creative-ad-real-object-hand-drawn-doodle.png",
     "caseUrl": "https://github.com/jamez-bondos/awesome-gpt4o-images/tree/main/cases/100",
     "tags": [
       "插画/漫画",

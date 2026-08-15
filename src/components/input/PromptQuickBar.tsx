@@ -1,6 +1,5 @@
 import type { QuickPhrase } from '../../types'
 import type { PromptLibraryTab } from '../../store'
-import { PromptLibraryIcon, SparkIcon } from '../icons'
 
 type Props = {
   quickPhrases: QuickPhrase[]
@@ -8,36 +7,13 @@ type Props = {
   onOpenLibrary: (tab: PromptLibraryTab) => void
 }
 
-const entryButtonClass = 'flex shrink-0 items-center gap-1 rounded-full border border-gray-200/70 bg-white/60 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-800 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.08] dark:hover:text-gray-100'
-
 /**
- * 输入框下方的一行：提示词库/灵感画廊入口 + 快捷短语 chips。
- * chips 点击是「追加」语义，不会覆盖已写内容。
+ * 输入框下方的快捷短语 chips。
+ * 点击是「追加」语义，不会覆盖已写内容；提示词库入口在参数面板「数量」右侧。
  */
 export default function PromptQuickBar({ quickPhrases, onAppendPhrase, onOpenLibrary }: Props) {
   return (
     <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-0.5">
-      <button
-        type="button"
-        onClick={() => onOpenLibrary('saved')}
-        className={entryButtonClass}
-        aria-label="打开提示词库"
-      >
-        <PromptLibraryIcon className="h-3.5 w-3.5" />
-        提示词库
-      </button>
-      <button
-        type="button"
-        onClick={() => onOpenLibrary('inspiration')}
-        className={entryButtonClass}
-        aria-label="打开灵感画廊"
-      >
-        <SparkIcon className="h-3.5 w-3.5" />
-        灵感画廊
-      </button>
-
-      <span className="mx-0.5 h-4 w-px shrink-0 bg-gray-200 dark:bg-white/[0.08]" aria-hidden="true" />
-
       {quickPhrases.length === 0 ? (
         <button
           type="button"
@@ -47,28 +23,27 @@ export default function PromptQuickBar({ quickPhrases, onAppendPhrase, onOpenLib
           添加快捷短语
         </button>
       ) : (
-        quickPhrases.map((phrase) => (
+        <>
+          {quickPhrases.map((phrase) => (
+            <button
+              key={phrase.id}
+              type="button"
+              onClick={() => onAppendPhrase(phrase.id)}
+              title={phrase.text}
+              className="shrink-0 rounded-full border border-gray-200/70 bg-white/50 px-2.5 py-1 text-xs text-gray-500 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-400 dark:hover:border-blue-500/40 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
+            >
+              {phrase.label}
+            </button>
+          ))}
           <button
-            key={phrase.id}
             type="button"
-            onClick={() => onAppendPhrase(phrase.id)}
-            title={phrase.text}
-            className="shrink-0 rounded-full border border-gray-200/70 bg-white/50 px-2.5 py-1 text-xs text-gray-500 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-400 dark:hover:border-blue-500/40 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
+            onClick={() => onOpenLibrary('quick')}
+            className="shrink-0 rounded-full px-2 py-1 text-xs text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+            aria-label="管理快捷短语"
           >
-            {phrase.label}
+            管理
           </button>
-        ))
-      )}
-
-      {quickPhrases.length > 0 && (
-        <button
-          type="button"
-          onClick={() => onOpenLibrary('quick')}
-          className="shrink-0 rounded-full px-2 py-1 text-xs text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-          aria-label="管理快捷短语"
-        >
-          管理
-        </button>
+        </>
       )}
     </div>
   )

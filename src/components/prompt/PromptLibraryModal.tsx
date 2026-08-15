@@ -49,25 +49,37 @@ const smallButtonClass = 'rounded-lg px-2 py-1 text-xs text-gray-500 transition-
 const primaryButtonClass = 'rounded-xl bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50'
 
 function InspirationThumb({ item }: { item: InspirationPrompt }) {
-  const [failed, setFailed] = useState(false)
+  // 主源用 jsDelivr（部分网络无法直连 raw.githubusercontent），失败再回退 GitHub raw
+  const sources = useMemo(() => {
+    if (!item.imageUrl) return []
+    const list = [item.imageUrl]
+    const rawFallback = item.imageUrl.replace(
+      'https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/',
+      'https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/',
+    )
+    if (rawFallback !== item.imageUrl) list.push(rawFallback)
+    return list
+  }, [item.imageUrl])
+  const [sourceIndex, setSourceIndex] = useState(0)
 
-  if (!item.imageUrl || failed) {
+  if (sources.length === 0 || sourceIndex >= sources.length) {
     return (
-      <div className="flex h-24 w-full items-center justify-center rounded-xl bg-gray-100 text-[11px] text-gray-400 dark:bg-white/[0.04] dark:text-gray-500">
-        无示例图
+      <div className="flex h-32 w-full items-center justify-center rounded-xl bg-gray-100 text-[11px] text-gray-400 dark:bg-white/[0.04] dark:text-gray-500">
+        示例图加载失败
       </div>
     )
   }
 
   return (
     <img
-      src={item.imageUrl}
+      key={sources[sourceIndex]}
+      src={sources[sourceIndex]}
       alt={item.title}
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
-      className="h-24 w-full rounded-xl bg-gray-100 object-cover dark:bg-white/[0.04]"
+      onError={() => setSourceIndex((index) => index + 1)}
+      className="h-32 w-full rounded-xl bg-gray-100 object-cover dark:bg-white/[0.04]"
     />
   )
 }
@@ -141,12 +153,12 @@ export default function PromptLibraryModal() {
   const showToast = useStore((s) => s.showToast)
   const setConfirmDialog = useStore((s) => s.setConfirmDialog)
 
-  const open = activeTab != null
-  usePreventBackgroundScroll(open)
-  useCloseOnEscape(open, closePromptLibrary)
-
   const modalRef = useRef<HTMLDivElement>(null)
   const mouseDownTargetRef = useRef<EventTarget | null>(null)
+
+  const open = activeTab != null
+  usePreventBackgroundScroll(open, modalRef)
+  useCloseOnEscape(open, closePromptLibrary)
 
   const [savedQuery, setSavedQuery] = useState('')
   const [savedTag, setSavedTag] = useState<string | null>(null)
@@ -429,7 +441,7 @@ export default function PromptLibraryModal() {
               </div>
             )}
 
-            <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1 -mr-1">
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1 -mr-1">
               {visibleSavedPrompts.length === 0 ? (
                 <div className="flex h-full min-h-[160px] items-center justify-center text-center text-xs leading-relaxed text-gray-400 dark:text-gray-500">
                   {savedPrompts.length === 0
@@ -493,7 +505,7 @@ export default function PromptLibraryModal() {
               </div>
             )}
 
-            <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1 -mr-1">
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1 -mr-1">
               {quickPhrases.length === 0 ? (
                 <div className="flex h-full min-h-[160px] items-center justify-center text-center text-xs text-gray-400 dark:text-gray-500">
                   快捷短语已清空，可点「恢复内置短语」或自己新增。
@@ -540,7 +552,7 @@ export default function PromptLibraryModal() {
               ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 -mr-1">
+            <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar pr-1 -mr-1">
               {inspirationLoadFailed ? (
                 <div className="flex h-full min-h-[160px] flex-col items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                   灵感数据加载失败

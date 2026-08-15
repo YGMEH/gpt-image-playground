@@ -1569,6 +1569,7 @@ export default function InputBar() {
       sizeHint={sizeHint}
       qualityHint={qualityHint}
       onOpenSizePicker={() => setShowSizePicker(true)}
+      onOpenPromptLibrary={() => openPromptLibrary('saved')}
     />
   )
 
@@ -1789,7 +1790,7 @@ export default function InputBar() {
           <div className="mt-3">
             {/* 桌面端布局 */}
             <div className="hidden sm:flex items-end justify-between gap-3">
-              {renderParams('grid-cols-3')}
+              {renderParams(showTransparentOutputControl ? 'grid-cols-5' : 'grid-cols-4')}
 
               <div className="flex gap-2 flex-shrink-0 mb-0.5">
                 <div

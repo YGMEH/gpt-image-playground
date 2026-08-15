@@ -15,7 +15,7 @@ describe('inspiration prompts data', () => {
       expect(item.caseUrl).toMatch(/^https:\/\/github\.com\/jamez-bondos\/awesome-gpt4o-images\//)
       expect(item.tags.length).toBeGreaterThan(0)
       for (const tag of item.tags) expect(INSPIRATION_TAGS).toContain(tag)
-      if (item.imageUrl) expect(item.imageUrl).toMatch(/^https:\/\/raw\.githubusercontent\.com\//)
+      if (item.imageUrl) expect(item.imageUrl).toMatch(/^https:\/\/cdn\.jsdelivr\.net\/gh\/jamez-bondos\/awesome-gpt4o-images@main\//)
     }
   })
 
