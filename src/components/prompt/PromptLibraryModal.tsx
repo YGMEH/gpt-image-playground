@@ -15,6 +15,7 @@ import {
   INSPIRATION_PROMPT_COUNT,
   INSPIRATION_SOURCE,
   INSPIRATION_TAGS,
+  getInspirationThumbUrl,
   getLoadedInspirationPrompts,
   loadInspirationPrompts,
   type InspirationPrompt,
@@ -49,20 +50,22 @@ const smallButtonClass = 'rounded-lg px-2 py-1 text-xs text-gray-500 transition-
 const primaryButtonClass = 'rounded-xl bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50'
 
 function InspirationThumb({ item }: { item: InspirationPrompt }) {
-  // 主源用 jsDelivr（部分网络无法直连 raw.githubusercontent），失败再回退 GitHub raw
+  // 优先用随应用分发的本地 WebP 缩略图（约 20KB，秒开）；缺失时才回退远程原图
   const sources = useMemo(() => {
-    if (!item.imageUrl) return []
-    const list = [item.imageUrl]
-    const rawFallback = item.imageUrl.replace(
-      'https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/',
-      'https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/',
-    )
-    if (rawFallback !== item.imageUrl) list.push(rawFallback)
+    const list = [getInspirationThumbUrl(item.id)]
+    if (item.imageUrl) {
+      list.push(item.imageUrl)
+      const rawFallback = item.imageUrl.replace(
+        'https://cdn.jsdelivr.net/gh/jamez-bondos/awesome-gpt4o-images@main/',
+        'https://raw.githubusercontent.com/jamez-bondos/awesome-gpt4o-images/main/',
+      )
+      if (rawFallback !== item.imageUrl) list.push(rawFallback)
+    }
     return list
-  }, [item.imageUrl])
+  }, [item.id, item.imageUrl])
   const [sourceIndex, setSourceIndex] = useState(0)
 
-  if (sources.length === 0 || sourceIndex >= sources.length) {
+  if (sourceIndex >= sources.length) {
     return (
       <div className="flex h-32 w-full items-center justify-center rounded-xl bg-gray-100 text-[11px] text-gray-400 dark:bg-white/[0.04] dark:text-gray-500">
         示例图加载失败
@@ -665,7 +668,7 @@ export default function PromptLibraryModal() {
                 <a href={INSPIRATION_SOURCE.licenseUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400">
                   {INSPIRATION_SOURCE.license}
                 </a>
-                ）。示例图片从原仓库按需加载。
+                ）。示例缩略图由原仓库示例图压缩后随应用内置，点标题可查看原案例。
               </p>
             </div>
           </>

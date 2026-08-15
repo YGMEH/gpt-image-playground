@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { INSPIRATION_PROMPT_COUNT, INSPIRATION_TAGS, loadInspirationPrompts } from './inspirationSource'
+import { INSPIRATION_PROMPT_COUNT, INSPIRATION_TAGS, getInspirationThumbUrl, loadInspirationPrompts } from './inspirationSource'
 import { INSPIRATION_PROMPTS } from './inspirationPrompts'
+
+/** public/inspiration 下的内置缩略图清单（构建期静态展开） */
+const thumbModules = import.meta.glob('../../public/inspiration/*.webp')
+const thumbNames = new Set(Object.keys(thumbModules).map((path) => path.split('/').pop()))
 
 describe('inspiration prompts data', () => {
   it('matches the declared count and has unique ids', () => {
@@ -24,5 +28,13 @@ describe('inspiration prompts data', () => {
     const second = await loadInspirationPrompts()
     expect(first).toBe(INSPIRATION_PROMPTS)
     expect(second).toBe(first)
+  })
+
+  it('ships a local webp thumbnail for every case', () => {
+    expect(thumbNames.size).toBe(INSPIRATION_PROMPT_COUNT)
+    for (const item of INSPIRATION_PROMPTS) {
+      expect(thumbNames.has(`${item.id}.webp`)).toBe(true)
+      expect(getInspirationThumbUrl(item.id)).toContain(`inspiration/${item.id}.webp`)
+    }
   })
 })

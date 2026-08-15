@@ -2,6 +2,8 @@ const CACHE_NAME = 'gpt-image-playground-v0.7.3'
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './pwa-icon.svg']
 const APP_SHELL_URLS = new Set(APP_SHELL.map((path) => new URL(path, self.registration.scope).href))
 const ASSETS_PATH = new URL('./assets/', self.registration.scope).pathname
+/** 灵感画廊内置缩略图：同源静态图片，走 cache-first 让二次打开无网络请求 */
+const INSPIRATION_PATH = new URL('./inspiration/', self.registration.scope).pathname
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -40,7 +42,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  if (!APP_SHELL_URLS.has(url.href) && !url.pathname.startsWith(ASSETS_PATH)) return
+  if (!APP_SHELL_URLS.has(url.href) && !url.pathname.startsWith(ASSETS_PATH) && !url.pathname.startsWith(INSPIRATION_PATH)) return
 
   event.respondWith(
     caches.match(request).then((cached) => {

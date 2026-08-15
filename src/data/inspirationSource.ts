@@ -50,6 +50,15 @@ export const INSPIRATION_TAGS: string[] = ['3D/手办', 'Q版/卡通', '插画/�
 /** 内置示例总数，用于未加载时展示提示文案 */
 export const INSPIRATION_PROMPT_COUNT = 100
 
+/**
+ * 本地缩略图目录（public/inspiration）。
+ * 缩略图由原仓库示例图等比缩到 480px 宽、转 WebP q72 生成，平均约 20KB，
+ * 随应用一起分发，打开画廊即时显示，不依赖外网。
+ */
+export function getInspirationThumbUrl(id: string) {
+  return `${import.meta.env.BASE_URL}inspiration/${id}.webp`
+}
+
 let cache: InspirationPrompt[] | null = null
 let pending: Promise<InspirationPrompt[]> | null = null
 
