@@ -21,6 +21,7 @@ import {
   type InspirationPrompt,
 } from '../../data/inspirationSource'
 import type { QuickPhrase, SavedPrompt } from '../../types'
+import { RESTYLE_STYLE_OPTIONS, WORKFLOW_PROMPTS } from '../../data/workflowPrompts'
 import { CloseIcon, EditIcon, PlusIcon, TrashIcon } from '../icons'
 import InspirationPreview from './InspirationPreview'
 
@@ -28,6 +29,7 @@ const TABS: Array<{ key: PromptLibraryTab; label: string }> = [
   { key: 'saved', label: '我的提示词' },
   { key: 'quick', label: '快捷短语' },
   { key: 'inspiration', label: '灵感画廊' },
+  { key: 'workflow', label: '工作流提示词' },
 ]
 
 const SORTS: Array<{ key: SavedPromptSort; label: string }> = [
@@ -157,6 +159,8 @@ export default function PromptLibraryModal() {
   const setPrompt = useStore((s) => s.setPrompt)
   const showToast = useStore((s) => s.showToast)
   const setConfirmDialog = useStore((s) => s.setConfirmDialog)
+  const workflowRunning = useStore((s) => s.workflowRunning)
+  const runWorkflowPrompt = useStore((s) => s.runWorkflowPrompt)
 
   const modalRef = useRef<HTMLDivElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
@@ -187,6 +191,8 @@ export default function PromptLibraryModal() {
   const [inspirationData, setInspirationData] = useState<InspirationPrompt[] | null>(() => getLoadedInspirationPrompts())
   const [inspirationLoadFailed, setInspirationLoadFailed] = useState(false)
   const [previewId, setPreviewId] = useState<string | null>(null)
+  const [expandedWorkflowId, setExpandedWorkflowId] = useState<string | null>(null)
+  const [restyleStyleId, setRestyleStyleId] = useState<string>(RESTYLE_STYLE_OPTIONS[0]?.id ?? 'golden-hour')
 
   // 灵感画廊数据约 180KB，只在切到该 Tab 时动态加载，避免拖慢首屏
   useEffect(() => {
@@ -683,6 +689,93 @@ export default function PromptLibraryModal() {
                 </a>
                 ）。示例缩略图由原仓库示例图压缩后随应用内置，点缩略图可放大查看原图。
               </p>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'workflow' && (
+          <>
+            <div className="mb-3">
+              <p className="text-xs leading-relaxed text-gray-400 dark:text-gray-500">
+                这些是「元提示词」：作为系统指令喂给文本视觉模型（如 grsai gemini），读图后生成最终中文提示词，再交给生图模型。带「两段式」标记的可一键完成去脏重绘 / 风格重塑。
+              </p>
+            </div>
+
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1 -mr-1">
+              {WORKFLOW_PROMPTS.map((item) => {
+                const expanded = expandedWorkflowId === item.id
+                return (
+                  <div key={item.id} className="rounded-2xl border border-gray-200/70 bg-white/60 p-3 dark:border-white/[0.08] dark:bg-white/[0.03]">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-gray-800 dark:text-gray-100">{item.title}</div>
+                        <div className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">{item.description}</div>
+                      </div>
+                    </div>
+                    <div className={`mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed text-gray-500 dark:text-gray-400 ${expanded ? '' : 'line-clamp-4'}`}>
+                      {item.content}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedWorkflowId(expanded ? null : item.id)}
+                      className="mt-1 text-[11px] text-blue-500 transition-colors hover:text-blue-600 dark:text-blue-400"
+                    >
+                      {expanded ? '收起' : '展开全文'}
+                    </button>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {item.needsReference && (
+                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                          需要参考图
+                        </span>
+                      )}
+                      {item.twoStage && (
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
+                          两段式
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPrompt(item.content)
+                          closePromptLibrary()
+                          showToast(`已填入「${item.title}」`, 'success')
+                        }}
+                        className={`${primaryButtonClass} ml-auto`}
+                      >
+                        填入输入框
+                      </button>
+                    </div>
+
+                    {item.twoStage && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-2 dark:border-white/[0.06]">
+                        {item.twoStage === 'restyle' && (
+                          <select
+                            value={restyleStyleId}
+                            onChange={(e) => setRestyleStyleId(e.target.value)}
+                            className={`${inputClass} w-auto`}
+                            aria-label="选择重塑风格"
+                          >
+                            {RESTYLE_STYLE_OPTIONS.map((style) => (
+                              <option key={style.id} value={style.id}>{style.label}</option>
+                            ))}
+                          </select>
+                        )}
+                        <button
+                          type="button"
+                          disabled={workflowRunning}
+                          onClick={() => {
+                            closePromptLibrary()
+                            void runWorkflowPrompt(item.kind, item.twoStage === 'restyle' ? restyleStyleId : undefined)
+                          }}
+                          className="rounded-xl bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {workflowRunning ? '生成中…' : item.twoStage === 'cleanup' ? '去脏重绘' : '风格重塑'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </>
         )}

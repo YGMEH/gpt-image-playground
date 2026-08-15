@@ -474,6 +474,72 @@ describe('callAgentResponsesApi', () => {
     ]))
   })
 
+  it('forwards reference images as OpenAI vision parts in chat mode', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+      id: 'chatcmpl_vision',
+      choices: [{ message: { role: 'assistant', content: '看到图了' } }],
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+    const profile = createDefaultOpenAIProfile({
+      apiKey: 'test-key',
+      apiMode: 'chat',
+      model: 'gemini-3.1-flash-lite',
+      baseUrl: 'https://grsai.dakka.com.cn',
+    })
+
+    await callAgentResponsesApi({
+      settings: { ...DEFAULT_SETTINGS, agentApiConfigMode: 'hybrid' },
+      profile,
+      params: DEFAULT_PARAMS,
+      input: [{
+        role: 'user',
+        content: [
+          { type: 'input_text', text: '分析这张图' },
+          { type: 'input_image', image_url: 'data:image/png;base64,aGk=' },
+        ],
+      }],
+    })
+
+    const [, init] = fetchMock.mock.calls[0]
+    const body = JSON.parse(String((init as RequestInit).body))
+    const userMessage = body.messages.find((message: { role: string }) => message.role === 'user')
+    expect(Array.isArray(userMessage.content)).toBe(true)
+    expect(userMessage.content).toEqual([
+      { type: 'text', text: '分析这张图' },
+      { type: 'image_url', image_url: { url: 'data:image/png;base64,aGk=' } },
+    ])
+  })
+
+  it('keeps text-only chat messages as plain strings', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+      id: 'chatcmpl_text',
+      choices: [{ message: { role: 'assistant', content: 'ok' } }],
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+    const profile = createDefaultOpenAIProfile({
+      apiKey: 'test-key',
+      apiMode: 'chat',
+      model: 'deepseek-chat',
+      baseUrl: 'https://api.deepseek.com',
+    })
+
+    await callAgentResponsesApi({
+      settings: { ...DEFAULT_SETTINGS, agentApiConfigMode: 'hybrid' },
+      profile,
+      params: DEFAULT_PARAMS,
+      input: [{ role: 'user', content: [{ type: 'input_text', text: '只有文字' }] }],
+    })
+
+    const [, init] = fetchMock.mock.calls[0]
+    const body = JSON.parse(String((init as RequestInit).body))
+    const userMessage = body.messages.find((message: { role: string }) => message.role === 'user')
+    expect(userMessage.content).toBe('只有文字')
+  })
+
   it('generates a conversation title through Chat Completions', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
       choices: [{

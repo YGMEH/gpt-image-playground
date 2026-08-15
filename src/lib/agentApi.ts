@@ -593,19 +593,65 @@ async function parseAgentStreamResponse(
 export function isChatCompletionsProfile(profile: ApiProfile) {
   return profile.apiMode === 'chat'
 }
+type ChatContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } }
 
-function extractResponsesInputText(content: unknown): string {
-  if (typeof content === 'string') return content
-  if (!Array.isArray(content)) return ''
-  const parts: string[] = []
+/**
+ * 把 Responses 协议的 content 拆成 Chat Completions 的多模态片段。
+ *
+ * 纯文本时返回单个 text 片段，调用方会退化为 `content: string`（兼容仅支持字符串的服务商）；
+ * 含图片时返回 OpenAI 视觉格式，让 chat 模式的多模态模型（如 gemini-3.1-flash-lite）真正读到图。
+ */
+function extractResponsesInputParts(content: unknown): ChatContentPart[] {
+  if (typeof content === 'string') {
+    return content.trim() ? [{ type: 'text', text: content }] : []
+  }
+  if (!Array.isArray(content)) return []
+  const parts: ChatContentPart[] = []
   for (const item of content) {
+    if (typeof item === 'string') {
+      if (item.trim()) parts.push({ type: 'text', text: item })
+      continue
+    }
     if (!item || typeof item !== 'object') continue
     const record = item as Record<string, unknown>
-    if (typeof record.text === 'string' && record.text.trim()) parts.push(record.text)
-    else if (typeof record.image_url === 'string' && record.image_url.trim()) parts.push('[image]')
+    if (typeof record.text === 'string' && record.text.trim()) {
+      parts.push({ type: 'text', text: record.text })
+      continue
+    }
+    if (typeof record.image_url === 'string' && record.image_url.trim()) {
+      parts.push({ type: 'image_url', image_url: { url: record.image_url } })
+      continue
+    }
+    // 兼容已经是 OpenAI 视觉格式的入参：{ type: 'image_url', image_url: { url } }
+    if (record.image_url && typeof record.image_url === 'object') {
+      const nested = record.image_url as Record<string, unknown>
+      if (typeof nested.url === 'string' && nested.url.trim()) {
+        parts.push({ type: 'image_url', image_url: { url: nested.url } })
+      }
+    }
   }
-    return parts.join('\n').trim()
+  return parts
 }
+
+function extractResponsesInputText(content: unknown): string {
+  return extractResponsesInputParts(content)
+    .map((part) => (part.type === 'text' ? part.text : '[image]'))
+    .join('\n')
+    .trim()
+}
+
+/** 纯文本时用字符串，含图片时用多模态数组。 */
+function toChatMessageContent(parts: ChatContentPart[]): string | ChatContentPart[] | null {
+  if (!parts.length) return null
+  if (parts.every((part) => part.type === 'text')) {
+    const text = parts.map((part) => (part.type === 'text' ? part.text : '')).join('\n').trim()
+    return text || null
+  }
+  return parts
+}
+
 
 function convertResponsesInputToChatMessages(input: unknown, instructions?: string): Array<Record<string, unknown>> {
   const messages: Array<Record<string, unknown>> = []
@@ -650,8 +696,14 @@ function convertResponsesInputToChatMessages(input: unknown, instructions?: stri
     const role = record.role === 'assistant' || record.role === 'system' || record.role === 'tool'
       ? record.role
       : 'user'
-    const text = extractResponsesInputText(record.content ?? record.text ?? record)
-    if (text) messages.push({ role, content: text })
+    // system/tool 角色不支持多模态数组，统一降级为文本
+    if (role === 'system' || role === 'tool') {
+      const text = extractResponsesInputText(record.content ?? record.text ?? record)
+      if (text) messages.push({ role, content: text })
+      continue
+    }
+    const content = toChatMessageContent(extractResponsesInputParts(record.content ?? record.text ?? record))
+    if (content) messages.push({ role, content })
   }
   return messages
 }
@@ -892,6 +944,80 @@ ${prompt}` },
     const payload = normalizeResponsePayload(await response.json())
     if (!payload) throw new Error('Agent 标题接口返回格式无效')
     return parseAgentConversationTitleXml(extractText(payload))
+  } finally {
+    clearTimeout(timeoutId)
+    signal?.removeEventListener('abort', abortFromCaller)
+  }
+}
+
+/**
+ * 工作流元提示词调用：把「元提示词全文 + 只做局部细节微调指令」作为系统消息，
+ * 参考图 + 用户补充要求作为用户消息，只让文本（视觉）模型产出最终提示词文本，
+ * 不触发任何生图工具。返回模型生成的最终提示词字符串。
+ */
+export async function callWorkflowPromptApi(opts: {
+  settings: AppSettings
+  profile: ApiProfile
+  systemPrompt: string
+  userText: string
+  imageDataUrls?: string[]
+  signal?: AbortSignal
+}): Promise<string> {
+  const { settings, profile, systemPrompt, userText, imageDataUrls, signal } = opts
+  const proxyConfig = readClientDevProxyConfig()
+  const useApiProxy = shouldUseApiProxy(profile.apiProxy, proxyConfig)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), profile.timeout * 1000)
+  const abortFromCaller = () => controller.abort()
+  if (signal?.aborted) controller.abort()
+  signal?.addEventListener('abort', abortFromCaller, { once: true })
+
+  try {
+    if (isChatCompletionsProfile(profile)) {
+      const userContent: Array<Record<string, unknown>> = [{ type: 'text', text: userText }]
+      for (const dataUrl of imageDataUrls ?? []) {
+        userContent.push({ type: 'image_url', image_url: { url: dataUrl } })
+      }
+      const messages: Array<Record<string, unknown>> = []
+      if (systemPrompt.trim()) messages.push({ role: 'system', content: systemPrompt.trim() })
+      messages.push({ role: 'user', content: userContent })
+
+      const response = await fetch(buildApiUrl(profile.baseUrl, 'chat/completions', proxyConfig, useApiProxy), {
+        method: 'POST',
+        headers: createHeaders(profile),
+        cache: 'no-store',
+        body: JSON.stringify({
+          model: profile.model || settings.model,
+          messages,
+        }),
+        signal: controller.signal,
+      })
+      if (!response.ok) throw new Error(await getApiErrorMessage(response))
+      return parseChatCompletionPayload(await response.json()).text
+    }
+
+    const content: Array<Record<string, string>> = [{ type: 'input_text', text: userText }]
+    for (const dataUrl of imageDataUrls ?? []) {
+      content.push({ type: 'input_image', image_url: dataUrl })
+    }
+    const body: Record<string, unknown> = {
+      model: profile.model || settings.model,
+      instructions: systemPrompt,
+      input: [{ role: 'user', content }],
+    }
+    if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
+
+    const response = await fetch(buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy), {
+      method: 'POST',
+      headers: createHeaders(profile),
+      cache: 'no-store',
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+    if (!response.ok) throw new Error(await getApiErrorMessage(response))
+    const payload = normalizeResponsePayload(await response.json())
+    if (!payload) throw new Error('工作流提示词接口返回格式无效')
+    return extractText(payload)
   } finally {
     clearTimeout(timeoutId)
     signal?.removeEventListener('abort', abortFromCaller)

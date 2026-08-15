@@ -47,7 +47,7 @@ import {
   storeImageWithSize,
 } from './lib/db'
 import { callImageApi } from './lib/api'
-import { callAgentConversationTitleApi, callAgentResponsesApi, callBatchImageSingle, parseBatchImageCallArguments, type AgentApiResultImage } from './lib/agentApi'
+import { callAgentConversationTitleApi, callAgentResponsesApi, callBatchImageSingle, callWorkflowPromptApi, parseBatchImageCallArguments, type AgentApiResultImage } from './lib/agentApi'
 import { buildAgentApiInput, buildAgentContinuationInput } from './lib/agentInputBuilder'
 import { collectAgentRoundOutputImageSlots, extractAgentReferenceIds, getAgentCurrentReferenceId, getAgentGeneratedImageReferenceId } from './lib/agentImageReferences'
 import { showBrowserNotification } from './lib/browserNotification'
@@ -69,6 +69,7 @@ import { canonicalizeBatchFunctionCallArguments, countResponseToolCalls, createR
 import { cleanStaleAgentInputDrafts, clearInputDraftState, isEmptyAgentInputDraft, normalizeAgentInputDrafts, remapAgentInputDraftMentionsForPathChange, restoreAgentInputDraftState, restoreGalleryInputDraftState, saveActiveAgentInputDrafts, saveGalleryInputDraft, syncActiveInputDraft, updateInputDraftImages } from './lib/inputDraftState'
 import { ALL_FAVORITES_COLLECTION_ID, DEFAULT_FAVORITE_COLLECTION_ID, createDefaultFavoriteCollection, deleteFavoriteCollectionState, ensureDefaultFavoriteCollection, getTaskFavoriteCollectionIds, mergeFavoriteCollections, normalizeFavoriteCollectionIds, normalizeFavoriteCollectionName, normalizeFavoriteCollections, normalizeFavoritePatch, normalizeLoadedFavoriteState, resolveDefaultFavoriteCollectionId, sameFavoriteCollectionIds } from './lib/favoriteState'
 import { appendPromptText, createDefaultQuickPhrases, createSavedPrompt, findSavedPromptByContent, markSavedPromptUsed, normalizeQuickPhrase, updateSavedPrompt, type CreateSavedPromptInput } from './lib/promptLibraryState'
+import { buildWorkflowSystemPrompt, getWorkflowPromptByKind, type WorkflowPromptKind } from './data/workflowPrompts'
 import { createPersistedState, mergePersistedAgentConversations, migratePersistedState, normalizePersistedState } from './lib/persistedState'
 import { addImageSizeParam, createTaskDonePatch, createTaskErrorPatch, deriveAgentImageActualParams, deriveGalleryActualParams, firstActualParams, hasActualParams, hasActualSizeParam, mapActualParamsByImage, mapRevisedPromptsByImage, markInterruptedOpenAIRunningTasks } from './lib/taskState'
 import { stripInjectedCodexCliSizePrompt } from './lib/size'
@@ -116,8 +117,8 @@ function isErrorToastTitle(title: string): boolean {
 
 export type SettingsTab = 'general' | 'agent' | 'api' | 'text' | 'data' | 'about'
 
-/** 提示词库面板的三个 Tab */
-export type PromptLibraryTab = 'saved' | 'quick' | 'inspiration'
+/** 提示词库面板的四个 Tab */
+export type PromptLibraryTab = 'saved' | 'quick' | 'inspiration' | 'workflow'
 
 const TIMEOUT_STREAMING_HINT = '也可尝试打开「流式传输」，并提高「请求中间步骤图像数」来维持连接。'
 const TIMEOUT_PARTIAL_IMAGES_ZERO_HINT = '官方流式接口不发送心跳，当前「请求中间步骤图像数」为 0，连接可能因无数据传输而断开。建议提高到 2 或 3。'
@@ -368,6 +369,8 @@ interface AppState {
   removeQuickPhrase: (id: string) => void
   restoreDefaultQuickPhrases: () => void
   appendQuickPhraseToPrompt: (id: string) => void
+  workflowRunning: boolean
+  runWorkflowPrompt: (kind: WorkflowPromptKind, styleId?: string) => Promise<void>
 
   streamPreviews: Record<string, string>
   streamPreviewSlots: Record<string, Record<string, string>>
@@ -917,6 +920,60 @@ export const useStore = create<AppState>()(
         const prompt = appendPromptText(s.prompt, phrase.text)
         return prompt === s.prompt ? s : syncActiveInputDraft(s, { prompt })
       }),
+
+      workflowRunning: false,
+      runWorkflowPrompt: async (kind, styleId) => {
+        const state = get()
+        if (state.workflowRunning) return
+        const { settings, prompt, inputImages, showToast } = state
+        const normalizedSettings = normalizeSettings(settings)
+
+        const agentValidationError = getAgentProfileValidationError(normalizedSettings)
+        if (agentValidationError) {
+          showToast(`请先完善 Agent API 配置：${agentValidationError.message}`, 'error')
+          state.setShowSettings(true, 'text')
+          return
+        }
+        const activeProfile = getAgentTextApiProfile(normalizedSettings)!
+        const workflowPrompt = getWorkflowPromptByKind(kind)
+        if (!workflowPrompt) {
+          showToast('未找到对应工作流提示词', 'error')
+          return
+        }
+        if (workflowPrompt.needsReference && inputImages.length === 0) {
+          showToast('请先上传参考图', 'error')
+          return
+        }
+
+        set({ workflowRunning: true })
+        try {
+          const imageDataUrls: string[] = []
+          for (const img of inputImages) {
+            const cached = await ensureImageCached(img.id)
+            const dataUrl = cached ?? img.dataUrl
+            if (dataUrl) imageDataUrls.push(dataUrl)
+          }
+          const userText = prompt.trim() || '请根据参考图生成最终提示词。'
+          const result = await callWorkflowPromptApi({
+            settings: createSettingsForApiProfile(normalizedSettings, activeProfile),
+            profile: activeProfile,
+            systemPrompt: buildWorkflowSystemPrompt(workflowPrompt, styleId),
+            userText,
+            imageDataUrls,
+          })
+          const finalText = result.trim()
+          if (!finalText) {
+            showToast('工作流未返回内容', 'error')
+            return
+          }
+          set((s) => syncActiveInputDraft(s, { prompt: finalText }))
+          showToast('已生成最终提示词，请确认后生图', 'success')
+        } catch (err) {
+          showToast(err instanceof Error ? err.message : String(err), 'error')
+        } finally {
+          set({ workflowRunning: false })
+        }
+      },
 
       streamPreviews: {},
       streamPreviewSlots: {},
