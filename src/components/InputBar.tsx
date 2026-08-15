@@ -22,6 +22,7 @@ import ButtonTooltip from './input/buttonTooltip'
 import DragUploadOverlay from './input/dragUploadOverlay'
 import InputBatchBars from './input/inputBatchBars'
 import InputParamsPanel from './input/inputParamsPanel'
+import PromptQuickBar from './input/PromptQuickBar'
 
 /** API 支持的最大参考图数量 */
 const API_MAX_IMAGES = 16
@@ -114,6 +115,9 @@ export default function InputBar() {
   const filterFavorite = useStore((s) => s.filterFavorite)
   const activeFavoriteCollectionId = useStore((s) => s.activeFavoriteCollectionId)
   const openFavoritePicker = useStore((s) => s.openFavoritePicker)
+  const quickPhrases = useStore((s) => s.quickPhrases)
+  const appendQuickPhraseToPrompt = useStore((s) => s.appendQuickPhraseToPrompt)
+  const openPromptLibrary = useStore((s) => s.openPromptLibrary)
   const searchQuery = useStore((s) => s.searchQuery)
 
   const filteredTasks = useMemo(() => {
@@ -1770,6 +1774,15 @@ export default function InputBar() {
                 </button>
               </div>
             )}
+          </div>
+
+          {/* 提示词库入口 + 快捷短语 */}
+          <div className={isMobile && mobileCollapsed ? 'hidden' : 'mt-2'}>
+            <PromptQuickBar
+              quickPhrases={quickPhrases}
+              onAppendPhrase={appendQuickPhraseToPrompt}
+              onOpenLibrary={openPromptLibrary}
+            />
           </div>
 
           {/* 参数 + 按钮 */}

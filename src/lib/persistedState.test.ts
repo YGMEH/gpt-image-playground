@@ -40,6 +40,8 @@ function source(settings: AppSettings = DEFAULT_SETTINGS) {
     agentAssetPanelCollapsed: false,
     favoriteCollections: [collectionA],
     defaultFavoriteCollectionId: collectionA.id,
+    savedPrompts: [],
+    quickPhrases: [],
     supportPromptDismissed: false,
     supportPromptOpen: false,
     supportPromptSkippedForImportedData: false,

@@ -253,6 +253,54 @@ export interface FavoriteCollection {
   updatedAt: number
 }
 
+// ===== 提示词库 =====
+
+/** 用户保存的提示词 */
+export interface SavedPrompt {
+  id: string
+  /** 展示名称 */
+  title: string
+  /** 提示词正文 */
+  content: string
+  /** 分类标签 */
+  tags: string[]
+  createdAt: number
+  updatedAt: number
+  /** 填入次数，用于「最常用」排序 */
+  useCount: number
+  /** 来源灵感条目 id（从灵感画廊收藏时写入） */
+  sourceId?: string
+  /** 来源链接 */
+  sourceUrl?: string
+  /** 原作者署名 */
+  sourceAuthor?: string
+}
+
+/** 快捷提示词（点一下追加到输入框的常用短语） */
+export interface QuickPhrase {
+  id: string
+  /** 按钮上显示的短标签 */
+  label: string
+  /** 实际追加进提示词的文本 */
+  text: string
+  createdAt: number
+  updatedAt: number
+}
+
+/** 内置快捷短语，用户可编辑或删除，删完可一键恢复 */
+export const DEFAULT_QUICK_PHRASES: Array<Pick<QuickPhrase, 'id' | 'label' | 'text'>> = [
+  { id: 'qp-clean', label: '干净无噪点', text: '画面干净清晰，形状明确，无噪点、无颗粒、无脏污纹理，避免过度锐化与杂乱细节' },
+  { id: 'qp-detail', label: '高细节', text: '细节丰富且有层次，材质质感真实，边缘轮廓清晰' },
+  { id: 'qp-cinema', label: '电影级打光', text: '电影级打光，主光方向明确，柔和阴影，层次分明的明暗过渡' },
+  { id: 'qp-studio', label: '棚拍布光', text: '专业摄影棚布光，柔光箱补光，背景干净无杂物' },
+  { id: 'qp-plain-bg', label: '纯色背景', text: '纯色背景，主体与背景分离清晰，留白充足' },
+  { id: 'qp-transparent', label: '透明背景', text: '透明背景，只保留主体，边缘干净无残留底色' },
+  { id: 'qp-front', label: '正面视角', text: '正面视角，主体居中，水平视平线，无透视畸变' },
+  { id: 'qp-flat', label: '扁平插画', text: '扁平插画风格，简洁色块，克制的细节，统一线条粗细' },
+  { id: 'qp-keep-face', label: '保持人物一致', text: '严格保持参考图中人物的脸型、五官比例、发型与服装配色不变' },
+  { id: 'qp-no-text', label: '不要文字', text: '画面中不要出现任何文字、水印或标志' },
+]
+
 // ===== Agent 模式 =====
 
 export type AgentMessageRole = 'user' | 'assistant'

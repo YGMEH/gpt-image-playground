@@ -14,6 +14,8 @@ import type {
   MaskDraft,
   TaskRecord,
   FavoriteCollection,
+  QuickPhrase,
+  SavedPrompt,
   ResponsesOutputItem,
   StoredImage,
   StoredImageThumbnail,
@@ -66,6 +68,7 @@ import { deleteAgentRoundFromConversation, getActiveAgentRounds, getAgentRoundPa
 import { canonicalizeBatchFunctionCallArguments, countResponseToolCalls, createReadyAgentRecoveredToolState, getAgentFunctionOutputCallIds, getAgentRecoveredFailureError, getAgentRecoveredToolCallCount, getPersistableAgentConversations, getPersistableRawResponsePayload, mergeResponseOutputItems, scrubResponseOutputForDeletedAgentTasks, scrubTaskRawResponsePayloadForDeletedTasks } from './lib/agentResponseState'
 import { cleanStaleAgentInputDrafts, clearInputDraftState, isEmptyAgentInputDraft, normalizeAgentInputDrafts, remapAgentInputDraftMentionsForPathChange, restoreAgentInputDraftState, restoreGalleryInputDraftState, saveActiveAgentInputDrafts, saveGalleryInputDraft, syncActiveInputDraft, updateInputDraftImages } from './lib/inputDraftState'
 import { ALL_FAVORITES_COLLECTION_ID, DEFAULT_FAVORITE_COLLECTION_ID, createDefaultFavoriteCollection, deleteFavoriteCollectionState, ensureDefaultFavoriteCollection, getTaskFavoriteCollectionIds, mergeFavoriteCollections, normalizeFavoriteCollectionIds, normalizeFavoriteCollectionName, normalizeFavoriteCollections, normalizeFavoritePatch, normalizeLoadedFavoriteState, resolveDefaultFavoriteCollectionId, sameFavoriteCollectionIds } from './lib/favoriteState'
+import { appendPromptText, createDefaultQuickPhrases, createSavedPrompt, findSavedPromptByContent, markSavedPromptUsed, normalizeQuickPhrase, updateSavedPrompt, type CreateSavedPromptInput } from './lib/promptLibraryState'
 import { createPersistedState, mergePersistedAgentConversations, migratePersistedState, normalizePersistedState } from './lib/persistedState'
 import { addImageSizeParam, createTaskDonePatch, createTaskErrorPatch, deriveAgentImageActualParams, deriveGalleryActualParams, firstActualParams, hasActualParams, hasActualSizeParam, mapActualParamsByImage, mapRevisedPromptsByImage, markInterruptedOpenAIRunningTasks } from './lib/taskState'
 import { stripInjectedCodexCliSizePrompt } from './lib/size'
@@ -112,6 +115,9 @@ function isErrorToastTitle(title: string): boolean {
 }
 
 export type SettingsTab = 'general' | 'agent' | 'api' | 'text' | 'data' | 'about'
+
+/** 提示词库面板的三个 Tab */
+export type PromptLibraryTab = 'saved' | 'quick' | 'inspiration'
 
 const TIMEOUT_STREAMING_HINT = '也可尝试打开「流式传输」，并提高「请求中间步骤图像数」来维持连接。'
 const TIMEOUT_PARTIAL_IMAGES_ZERO_HINT = '官方流式接口不发送心跳，当前「请求中间步骤图像数」为 0，连接可能因无数据传输而断开。建议提高到 2 或 3。'
@@ -346,6 +352,23 @@ interface AppState {
   favoritePickerTaskIds: string[] | null
   openFavoritePicker: (taskIds: string[]) => void
   closeFavoritePicker: () => void
+
+  // 提示词库
+  savedPrompts: SavedPrompt[]
+  quickPhrases: QuickPhrase[]
+  promptLibraryTab: PromptLibraryTab | null
+  openPromptLibrary: (tab?: PromptLibraryTab) => void
+  closePromptLibrary: () => void
+  addSavedPrompt: (input: CreateSavedPromptInput) => SavedPrompt | null
+  editSavedPrompt: (id: string, patch: Partial<Pick<SavedPrompt, 'title' | 'content' | 'tags'>>) => void
+  removeSavedPrompt: (id: string) => void
+  applySavedPrompt: (id: string) => void
+  addQuickPhrase: (label: string, text: string) => QuickPhrase | null
+  editQuickPhrase: (id: string, patch: Partial<Pick<QuickPhrase, 'label' | 'text'>>) => void
+  removeQuickPhrase: (id: string) => void
+  restoreDefaultQuickPhrases: () => void
+  appendQuickPhraseToPrompt: (id: string) => void
+
   streamPreviews: Record<string, string>
   streamPreviewSlots: Record<string, Record<string, string>>
   setTaskStreamPreview: (taskId: string, image?: string, requestIndex?: number) => void
@@ -830,6 +853,71 @@ export const useStore = create<AppState>()(
         set({ favoritePickerTaskIds: Array.from(new Set(taskIds)).filter(Boolean) })
       },
       closeFavoritePicker: () => set({ favoritePickerTaskIds: null }),
+
+      // 提示词库
+      savedPrompts: [],
+      quickPhrases: createDefaultQuickPhrases(),
+      promptLibraryTab: null,
+      openPromptLibrary: (tab = 'saved') => {
+        dismissAllTooltips()
+        set({ promptLibraryTab: tab })
+      },
+      closePromptLibrary: () => set({ promptLibraryTab: null }),
+      addSavedPrompt: (input) => {
+        const existing = findSavedPromptByContent(get().savedPrompts, input.content)
+        if (existing) return existing
+        const prompt = createSavedPrompt(input, genId())
+        if (!prompt) return null
+        set((s) => ({ savedPrompts: [prompt, ...s.savedPrompts] }))
+        return prompt
+      },
+      editSavedPrompt: (id, patch) => set((s) => {
+        const savedPrompts = updateSavedPrompt(s.savedPrompts, id, patch)
+        return savedPrompts === s.savedPrompts ? s : { savedPrompts }
+      }),
+      removeSavedPrompt: (id) => set((s) => ({ savedPrompts: s.savedPrompts.filter((prompt) => prompt.id !== id) })),
+      applySavedPrompt: (id) => set((s) => {
+        const prompt = s.savedPrompts.find((item) => item.id === id)
+        if (!prompt) return s
+        return {
+          ...syncActiveInputDraft(s, { prompt: prompt.content }),
+          savedPrompts: markSavedPromptUsed(s.savedPrompts, id),
+        }
+      }),
+      addQuickPhrase: (label, text) => {
+        const phrase = normalizeQuickPhrase({ id: genId(), label, text })
+        if (!phrase) return null
+        set((s) => ({ quickPhrases: [...s.quickPhrases, phrase] }))
+        return phrase
+      },
+      editQuickPhrase: (id, patch) => set((s) => {
+        let changed = false
+        const quickPhrases = s.quickPhrases.map((phrase) => {
+          if (phrase.id !== id) return phrase
+          const next = normalizeQuickPhrase({
+            ...phrase,
+            ...patch,
+            updatedAt: Date.now(),
+          })
+          if (!next || (next.label === phrase.label && next.text === phrase.text)) return phrase
+          changed = true
+          return next
+        })
+        return changed ? { quickPhrases } : s
+      }),
+      removeQuickPhrase: (id) => set((s) => ({ quickPhrases: s.quickPhrases.filter((phrase) => phrase.id !== id) })),
+      restoreDefaultQuickPhrases: () => set((s) => {
+        const existingIds = new Set(s.quickPhrases.map((phrase) => phrase.id))
+        const missing = createDefaultQuickPhrases().filter((phrase) => !existingIds.has(phrase.id))
+        return missing.length ? { quickPhrases: [...s.quickPhrases, ...missing] } : s
+      }),
+      appendQuickPhraseToPrompt: (id) => set((s) => {
+        const phrase = s.quickPhrases.find((item) => item.id === id)
+        if (!phrase) return s
+        const prompt = appendPromptText(s.prompt, phrase.text)
+        return prompt === s.prompt ? s : syncActiveInputDraft(s, { prompt })
+      }),
+
       streamPreviews: {},
       streamPreviewSlots: {},
       setTaskStreamPreview: (taskId, image, requestIndex = 0) => set((s) => {

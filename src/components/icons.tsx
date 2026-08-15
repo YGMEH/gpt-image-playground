@@ -32,6 +32,24 @@ export function CloseIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function PromptLibraryIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5.5A1.5 1.5 0 015.5 4H10a2 2 0 012 2 2 2 0 012-2h4.5A1.5 1.5 0 0120 5.5V18a1 1 0 01-1 1h-5a2 2 0 00-2 2 2 2 0 00-2-2H5a1 1 0 01-1-1V5.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v15" />
+    </svg>
+  )
+}
+
+export function SparkIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 15.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9.9-2.3z" />
+    </svg>
+  )
+}
+
 export function ExpandIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" {...props}>

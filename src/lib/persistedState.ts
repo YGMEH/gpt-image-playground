@@ -1,8 +1,9 @@
-import type { AgentConversation, AgentInputDraft, AppMode, AppSettings, FavoriteCollection, InputImage, MaskDraft, TaskParams } from '../types'
+import type { AgentConversation, AgentInputDraft, AppMode, AppSettings, FavoriteCollection, InputImage, MaskDraft, QuickPhrase, SavedPrompt, TaskParams } from '../types'
 import { normalizeSettings } from './apiProfiles'
 import { ensureLocalStudioSettings } from './localStudioProfiles'
 import { normalizeAgentConversations } from './agentConversationState'
 import { ensureDefaultFavoriteCollection, normalizeFavoriteCollections, resolveDefaultFavoriteCollectionId } from './favoriteState'
+import { normalizeQuickPhrases, normalizeSavedPrompts } from './promptLibraryState'
 import { cleanStaleAgentInputDrafts, getPersistableAgentInputDrafts, isEmptyAgentInputDraft, normalizeAgentInputDraft, normalizeAgentInputDrafts, normalizeAgentInputDraftsByKey, saveGalleryInputDraft } from './inputDraftState'
 import { getPersistableAgentConversations, stripPersistedAgentConversations } from './agentResponseState'
 
@@ -22,6 +23,8 @@ export interface PersistedAppState {
   agentAssetPanelCollapsed: boolean
   favoriteCollections: FavoriteCollection[]
   defaultFavoriteCollectionId: string | null
+  savedPrompts: SavedPrompt[]
+  quickPhrases: QuickPhrase[]
   supportPromptDismissed: boolean
   supportPromptOpen: boolean
   supportPromptSkippedForImportedData: boolean
@@ -109,6 +112,8 @@ export function createPersistedState(state: PersistedStateSource, includeLegacyA
     agentAssetPanelCollapsed: state.agentAssetPanelCollapsed,
     favoriteCollections: state.favoriteCollections,
     defaultFavoriteCollectionId: state.defaultFavoriteCollectionId,
+    savedPrompts: state.savedPrompts,
+    quickPhrases: state.quickPhrases,
     supportPromptDismissed: state.supportPromptDismissed,
     supportPromptOpen: state.supportPromptOpen,
     supportPromptSkippedForImportedData: state.supportPromptSkippedForImportedData,
@@ -191,6 +196,8 @@ export function normalizePersistedState(
       agentAssetPanelCollapsed: Boolean(persistedState.agentAssetPanelCollapsed),
       favoriteCollections,
       defaultFavoriteCollectionId: resolveDefaultFavoriteCollectionId(favoriteCollections, preferredDefaultFavoriteCollectionId),
+      savedPrompts: normalizeSavedPrompts(persistedState.savedPrompts, now),
+      quickPhrases: normalizeQuickPhrases(persistedState.quickPhrases, now),
       supportPromptDismissed: Boolean(persistedState.supportPromptDismissed),
       supportPromptOpen: Boolean(persistedState.supportPromptOpen),
       supportPromptSkippedForImportedData: Boolean(persistedState.supportPromptSkippedForImportedData),
