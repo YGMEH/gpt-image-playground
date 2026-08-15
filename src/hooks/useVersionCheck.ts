@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 
-const REPO = 'CookSleep/gpt_image_playground'
+/**
+ * 版本检查所指向的仓库。
+ * 指向本站点自己的仓库，避免把上游仓库的 Release 当成本站更新来提示。
+ * 上游项目：https://github.com/CookSleep/gpt_image_playground
+ */
+const REPO = 'YGMEH/gpt-image-playground'
 const API_URL = `https://api.github.com/repos/${REPO}/releases/latest`
 
 function compareVersions(a: string, b: string) {
