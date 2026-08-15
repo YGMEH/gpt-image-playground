@@ -398,7 +398,7 @@ export function FavoriteCollectionPickerModal() {
                     <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-gray-700 dark:text-gray-200" title={collection.name}>{collection.name}</span>
                   )}
                 </div>
-                <div className={`flex shrink-0 items-center justify-end gap-2 overflow-hidden pr-4 transition-all duration-150 ${editingId === collection.id ? 'w-12' : 'w-28'}`}>
+                <div className={`flex shrink-0 items-center justify-end gap-2 overflow-hidden pr-4 transition-[width,opacity] duration-150 ${editingId === collection.id ? 'w-12' : 'w-28'}`}>
                     {editingId === collection.id ? (
                       <FavoriteActionButton
                         tooltip="确认"

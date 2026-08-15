@@ -51,7 +51,7 @@ export default function AgentSettingsTab({
                 { label: '原生', value: 'native' },
                 { label: '混合', value: 'hybrid' },
               ]}
-              className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-all duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
+              className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
             />
           </div>
         </div>
@@ -73,10 +73,10 @@ export default function AgentSettingsTab({
                     onChange={(value) => commitSettings({ ...draft, agentTextProfileId: String(value) })}
                     options={agentTextProfileOptions}
                     showValueTooltips
-                    className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-all duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
+                    className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
                   />
                 ) : (
-                  <div className="w-full rounded-xl border border-gray-200/60 bg-white/50 px-3 py-1.5 text-center text-xs text-gray-700 shadow-sm transition-all duration-200 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200">
+                  <div className="w-full rounded-xl border border-gray-200/60 bg-white/50 px-3 py-1.5 text-center text-xs text-gray-700 shadow-sm transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200">
                     没有可用配置
                   </div>
                 )}
@@ -97,7 +97,7 @@ export default function AgentSettingsTab({
                     onChange={(value) => commitSettings({ ...draft, agentImageProfileId: String(value) })}
                     options={agentImageProfileOptions}
                     showValueTooltips
-                    className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-all duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
+                    className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
                   />
                 </div>
               </div>

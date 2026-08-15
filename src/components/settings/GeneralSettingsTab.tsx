@@ -29,7 +29,7 @@ export default function GeneralSettingsTab({
                 { label: navigator.userAgent.includes('Mac') ? '⌘ + Enter' : 'Ctrl + Enter', value: 'ctrl-enter' },
                 { label: 'Enter', value: 'enter' }
               ]}
-              className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-all duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
+              className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
             />
           </div>
         </div>
@@ -48,7 +48,7 @@ export default function GeneralSettingsTab({
                 { label: '发送按钮', value: 'button' },
                 { label: '回车/发送按钮', value: 'enter' }
               ]}
-              className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-all duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
+              className="w-full px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] text-xs transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm text-gray-700 dark:text-gray-200 outline-none"
             />
           </div>
         </div>

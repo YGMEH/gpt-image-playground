@@ -18,11 +18,11 @@ export function Checkbox({ checked, onChange, label, tone = 'primary', className
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
-          className={`peer appearance-none w-4 h-4 rounded-[4px] border bg-white focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white dark:bg-white/5 dark:focus:ring-offset-gray-900 transition-all cursor-pointer ${toneClasses}`}
+          className={`peer appearance-none w-4 h-4 rounded-[4px] border bg-white focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white dark:bg-white/5 dark:focus:ring-offset-gray-900 transition-[width,opacity] cursor-pointer ${toneClasses}`}
           {...props}
         />
         <svg
-          className="absolute w-2.5 h-2.5 pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-all duration-200 text-white"
+          className="absolute w-2.5 h-2.5 pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-[width,opacity] duration-200 text-white"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

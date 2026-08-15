@@ -97,7 +97,7 @@ export default function InputParamsPanel({
         <button
           type="button"
           onClick={() => { dismissAllTooltips(); onOpenSizePicker() }}
-          className="px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] focus:outline-none text-xs text-left transition-all duration-200 shadow-sm font-mono"
+          className="px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] bg-white/50 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] focus:outline-none text-xs text-left transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm font-mono"
         >
           {displaySize}
         </button>
@@ -194,7 +194,7 @@ export default function InputParamsPanel({
           type={agentAutoImageCount ? 'text' : 'number'}
           min={agentAutoImageCount ? undefined : 1}
           max={agentAutoImageCount ? undefined : outputImageLimit}
-          className={`px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] focus:outline-none text-xs transition-all duration-200 shadow-sm ${
+          className={`px-3 py-1.5 rounded-xl border border-gray-200/60 dark:border-white/[0.08] focus:outline-none text-xs transition-[color,background-color,border-color,opacity,box-shadow,transform] duration-200 shadow-sm ${
             agentAutoImageCount
               ? 'bg-gray-100/50 dark:bg-white/[0.05] opacity-50 cursor-not-allowed'
               : 'bg-white/50 dark:bg-white/[0.03]'

@@ -1,6 +1,3 @@
-@import url('https://fontsapi.zeoseven.com/442/main/result.css');
-@import url('https://cdn.jsdelivr.net/npm/@lobehub/webfont-harmony-sans-sc@1.0.0/css/index.css');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -485,4 +482,46 @@ input[type="number"] {
 .ios-rounded-scroll-fix {
   isolation: isolate;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+/* ===== 动效性能与可访问性 ===== */
+
+/*
+ * 移动端（含大量毛玻璃层叠的输入栏、弹窗、卡片角标）降低 backdrop-filter 半径。
+ * 大半径模糊在移动 GPU 上每帧都要重采样背景，是滑动和展开动画掉帧的主要来源。
+ */
+@media (max-width: 640px) {
+  .backdrop-blur-2xl,
+  .backdrop-blur-xl,
+  .backdrop-blur-lg {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .backdrop-blur-md {
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+}
+
+/* 尊重系统「减少动态效果」设置：关掉过渡与装饰动画，仅保留即时状态变化 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .backdrop-blur-2xl,
+  .backdrop-blur-xl,
+  .backdrop-blur-lg,
+  .backdrop-blur-md,
+  .backdrop-blur-sm,
+  .backdrop-blur {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }

@@ -412,7 +412,7 @@ export default function TaskCard({
                 onError={() => setStreamPreviewLoaded(false)}
               />
               {streamPreviewLoaded && (
-                <span className="absolute top-1.5 right-1.5 flex items-center gap-1 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm sm:text-xs">
+                <span className="absolute top-1.5 right-1.5 flex items-center gap-1 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-medium text-white sm:text-xs">
                   预览
                 </span>
               )}
@@ -517,7 +517,7 @@ export default function TaskCard({
           {/* 运行中显示耗时，完成后显示封面图比例与分辨率标签 */}
           <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
             {showRunningTimer || task.status !== 'done' || !coverRatio || !coverSize ? (
-              <span className="flex items-center gap-1 bg-black/50 text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded backdrop-blur-sm font-mono">
+              <span className="flex items-center gap-1 bg-black/50 text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded font-mono">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -525,10 +525,10 @@ export default function TaskCard({
               </span>
             ) : (
               <>
-                <span className="bg-black/50 text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded backdrop-blur-sm font-mono">
+                <span className="bg-black/50 text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded font-mono">
                   {coverRatio}
                 </span>
-                <span className="bg-black/50 text-white/90 text-[10px] sm:text-xs px-1.5 py-0.5 rounded backdrop-blur-sm font-medium">
+                <span className="bg-black/50 text-white/90 text-[10px] sm:text-xs px-1.5 py-0.5 rounded font-medium">
                   {coverSize}
                 </span>
               </>

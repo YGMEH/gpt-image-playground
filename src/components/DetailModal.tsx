@@ -530,16 +530,16 @@ export default function DetailModal() {
               <div data-selectable-text className="absolute left-4 top-[15px] flex items-center gap-1.5">
                 {currentImageRatio && currentImageSize ? (
                   <>
-                    <span className="bg-black/50 text-white text-xs px-2 py-0.5 rounded backdrop-blur-sm font-mono">
+                    <span className="bg-black/50 text-white text-xs px-2 py-0.5 rounded font-mono">
                       {currentImageRatio}
                     </span>
-                    <span className="bg-black/50 text-white/90 text-xs px-2 py-0.5 rounded backdrop-blur-sm font-medium">
+                    <span className="bg-black/50 text-white/90 text-xs px-2 py-0.5 rounded font-medium">
                       {currentImageSize}
                     </span>
                   </>
                 ) : (
                   formatDuration() && (
-                    <span className="flex items-center gap-1 bg-black/50 text-white text-xs px-2 py-0.5 rounded backdrop-blur-sm font-mono">
+                    <span className="flex items-center gap-1 bg-black/50 text-white text-xs px-2 py-0.5 rounded font-mono">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -666,7 +666,7 @@ export default function DetailModal() {
                     </svg>
                   )}
                   {streamPreviewLoaded && (
-                    <span className="absolute top-4 right-4 flex items-center gap-1 rounded bg-blue-500 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                    <span className="absolute top-4 right-4 flex items-center gap-1 rounded bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">
                       流式预览
                     </span>
                   )}
@@ -932,7 +932,7 @@ export default function DetailModal() {
                               />
                             )}
                             {isMaskTarget && (
-                              <span className="absolute left-1 top-1 rounded bg-blue-500/90 px-1.5 py-0.5 text-[8px] leading-none text-white font-bold tracking-wider backdrop-blur-sm z-10 pointer-events-none">
+                              <span className="absolute left-1 top-1 rounded bg-blue-500/90 px-1.5 py-0.5 text-[8px] leading-none text-white font-bold tracking-wider z-10 pointer-events-none">
                                 MASK
                               </span>
                             )}
@@ -1119,7 +1119,7 @@ export default function DetailModal() {
             <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-5 bg-gray-50/50 dark:bg-black/20 overscroll-contain">
               <div className="space-y-2.5">
                 {rawImageUrls.map((url, i) => (
-                  <div key={i} className="group flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white dark:bg-[#1c1c1e] border border-gray-100 dark:border-white/[0.06] shadow-sm hover:shadow-md transition-all">
+                  <div key={i} className="group flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white dark:bg-[#1c1c1e] border border-gray-100 dark:border-white/[0.06] shadow-sm hover:shadow-md transition-[color,background-color,border-color,opacity,box-shadow,transform]">
                     <div className="flex-1 min-w-0 flex flex-col gap-1">
                       <div className="text-xs font-medium text-gray-400 dark:text-gray-500">
                         图片 {i + 1}

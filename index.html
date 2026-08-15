@@ -10,6 +10,11 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./pwa-icon.svg" />
     <link rel="icon" href="./pwa-icon.svg" type="image/svg+xml" />
+    <!-- 字体改为非阻塞加载：先用系统字体渲染，Web 字体到位后再替换，避免首屏被远程 CSS 卡住 -->
+    <link rel="preconnect" href="https://fontsapi.zeoseven.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://fontsapi.zeoseven.com/442/main/result.css" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lobehub/webfont-harmony-sans-sc@1.0.0/css/index.css" media="print" onload="this.media='all'" />
     <title>GPT Image Playground</title>
   </head>
   <body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen">

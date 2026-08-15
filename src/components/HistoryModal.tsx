@@ -269,7 +269,7 @@ export default function HistoryModal({ onClose, ignoreOutsideClickRef }: History
                     </div>
                   )}
                 </div>
-                <div className={`flex shrink-0 items-center justify-end gap-1 overflow-hidden transition-all duration-150 ${editingId === c.id ? 'w-7 opacity-100' : 'w-0 opacity-0 group-hover:w-16 group-hover:opacity-100 group-focus-within:w-16 group-focus-within:opacity-100'}`}>
+                <div className={`flex shrink-0 items-center justify-end gap-1 overflow-hidden transition-[width,opacity] duration-150 ${editingId === c.id ? 'w-7 opacity-100' : 'w-0 opacity-0 group-hover:w-16 group-hover:opacity-100 group-focus-within:w-16 group-focus-within:opacity-100'}`}>
                   {editingId === c.id ? (
                     <HistoryActionButton
                       tooltip="确认"
