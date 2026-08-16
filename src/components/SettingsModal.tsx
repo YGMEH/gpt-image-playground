@@ -49,56 +49,15 @@ import TextSettingsTab from './settings/TextSettingsTab'
 import CustomProviderModal from './settings/CustomProviderModal'
 import ProfileImportUrlModal, { type CopyImportUrlOptions } from './settings/ProfileImportUrlModal'
 import ZipDownloadRouteModal, { ZIP_DOWNLOAD_ROUTE_OPTIONS } from './settings/ZipDownloadRouteModal'
+import { readCopyImportUrlOptions, saveCopyImportUrlOptions } from '../lib/profileImportUrlOptions'
 
 function newId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 }
-
 const ADD_CUSTOM_PROVIDER_VALUE = '__add_custom_provider__'
-const COPY_IMPORT_URL_OPTIONS_STORAGE_KEY = 'gpt-image-playground.copy-import-url-options'
-
-const DEFAULT_COPY_IMPORT_URL_OPTIONS = {
-  useNewApiAddress: false,
-  useNewApiKey: true,
-  useNewApiModel: false,
-}
 
 type ProfileImportUrlOptions = CopyImportUrlOptions
 
-function readCopyImportUrlOptions(): CopyImportUrlOptions {
-  if (typeof window === 'undefined') return DEFAULT_COPY_IMPORT_URL_OPTIONS
-
-  try {
-    const saved = window.localStorage.getItem(COPY_IMPORT_URL_OPTIONS_STORAGE_KEY)
-    if (!saved) return DEFAULT_COPY_IMPORT_URL_OPTIONS
-
-    const parsed = JSON.parse(saved) as Partial<CopyImportUrlOptions> | null
-    if (!parsed || typeof parsed !== 'object') return DEFAULT_COPY_IMPORT_URL_OPTIONS
-
-
-    return {
-      useNewApiAddress: Boolean(parsed.useNewApiAddress),
-      useNewApiKey: parsed.useNewApiKey === undefined ? true : Boolean(parsed.useNewApiKey),
-      useNewApiModel: Boolean(parsed.useNewApiModel),
-    }
-  } catch {
-    return DEFAULT_COPY_IMPORT_URL_OPTIONS
-  }
-}
-
-function saveCopyImportUrlOptions(options: CopyImportUrlOptions) {
-  if (typeof window === 'undefined') return
-
-  try {
-    window.localStorage.setItem(COPY_IMPORT_URL_OPTIONS_STORAGE_KEY, JSON.stringify({
-      useNewApiAddress: options.useNewApiAddress,
-      useNewApiKey: options.useNewApiKey,
-      useNewApiModel: options.useNewApiModel,
-    }))
-  } catch {
-    // localStorage 不可用时只保留当前会话状态。
-  }
-}
 
 function isPristineNewOpenAIProfile(profile: ApiProfile) {
   const defaultProfile = createDefaultOpenAIProfile({ id: profile.id, name: '新配置' })

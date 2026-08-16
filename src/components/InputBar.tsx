@@ -23,6 +23,7 @@ import DragUploadOverlay from './input/dragUploadOverlay'
 import InputBatchBars from './input/inputBatchBars'
 import InputParamsPanel from './input/inputParamsPanel'
 import PromptQuickBar from './input/PromptQuickBar'
+import useIsMobile from '../hooks/useIsMobile'
 
 /** API 支持的最大参考图数量 */
 const API_MAX_IMAGES = 16
@@ -35,16 +36,6 @@ function getFavoriteCollectionTasksForBatch(collectionId: string, tasks: TaskRec
 
 function delay(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
-}
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 640)
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 640)
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-  return isMobile
 }
 
 type AtImageOption =
