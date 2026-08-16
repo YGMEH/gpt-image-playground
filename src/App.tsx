@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { initStore } from './store'
 import { useStore } from './store'
 import { activateFirstImportedProfile, buildSettingsFromUrlParams, clearUrlSettingParams, hasUrlSettingParams } from './lib/urlSettings'
@@ -9,21 +9,16 @@ import type { AppSettings } from './types'
 import Header from './components/Header'
 import SearchBar from './components/SearchBar'
 import TaskGrid from './components/TaskGrid'
-import AgentWorkspace from './components/AgentWorkspace'
 import InputBar from './components/InputBar'
-import DetailModal from './components/DetailModal'
-import Lightbox from './components/Lightbox'
-import SettingsModal from './components/SettingsModal'
 import ConfirmDialog from './components/ConfirmDialog'
 import Toast from './components/Toast'
-import MaskEditorModal from './components/MaskEditorModal'
-import PromptLibraryModal from './components/prompt/PromptLibraryModal'
 import ImageContextMenu from './components/ImageContextMenu'
-import SupportPromptModal from './components/SupportPromptModal'
-import { FavoriteCollectionPickerModal, FavoriteCollectionsView, ManageCollectionsModal } from './components/FavoriteCollections'
+import { FavoriteCollectionsView } from './components/FavoriteCollections'
+import LazyOverlays from './components/LazyOverlays'
 import { useGlobalClickSuppression } from './lib/clickSuppression'
 
 let customProviderConfigUrlImportStarted = false
+const AgentWorkspace = lazy(() => import('./components/AgentWorkspace'))
 
 export default function App() {
   const setSettings = useStore((s) => s.setSettings)
@@ -112,7 +107,9 @@ export default function App() {
     <>
       <Header />
       {appMode === 'agent' ? (
-        <AgentWorkspace />
+        <Suspense fallback={<main className="safe-area-x mx-auto max-w-7xl px-4 py-10 text-sm text-gray-500">正在加载 Agent 工作台…</main>}>
+          <AgentWorkspace />
+        </Suspense>
       ) : (
         <main data-home-main data-drag-select-surface className="pb-[calc(var(--input-bar-clearance,12rem)+1.5rem)]">
           <div className="safe-area-x max-w-7xl mx-auto">
@@ -122,16 +119,9 @@ export default function App() {
         </main>
       )}
       <InputBar />
-      <DetailModal />
-      <Lightbox />
-      <SettingsModal />
-      <PromptLibraryModal />
+      <LazyOverlays />
       <ConfirmDialog />
-      <SupportPromptModal />
-      <FavoriteCollectionPickerModal />
-      <ManageCollectionsModal />
       <Toast />
-      <MaskEditorModal />
       <ImageContextMenu />
     </>
   )

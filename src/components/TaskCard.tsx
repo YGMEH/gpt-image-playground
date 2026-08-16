@@ -330,7 +330,7 @@ export default function TaskCard({
   const isInterrupted = task.status === 'error' && task.error === '已停止生成。'
 
   return (
-    <div className="relative rounded-xl">
+    <div className="relative rounded-xl [content-visibility:auto] [contain-intrinsic-size:auto_30rem]">
       {/* 侧滑底图 */}
       <div
         className={`absolute inset-0 rounded-xl flex items-center transition-opacity duration-200 pointer-events-none ${
