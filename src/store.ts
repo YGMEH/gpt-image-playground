@@ -2679,7 +2679,7 @@ async function executeAgentRound(
       : conversation.messages.find((message) => message.roundId === roundId && message.role === 'assistant') ?? null
     const assistantMessageId = existingAssistantMessage?.id ?? genId()
     const resumedAssistantContent = resume ? existingAssistantMessage?.content.trim() ?? '' : ''
-    const shouldStreamAssistantMessage = activeProfile.streamImages === true
+    const shouldStreamAssistantMessage = true
     const imageRequestSettings = createSettingsForApiProfile(requestSettings, imageProfile)
     const imageParams = normalizeParamsForSettings(params, imageRequestSettings, { hasInputImages: round.inputImageIds.length > 0 })
     const streamingTaskIds: string[] = resume ? [...round.outputTaskIds] : []

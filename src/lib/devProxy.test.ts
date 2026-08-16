@@ -37,12 +37,22 @@ describe('buildApiUrl', () => {
     )
   })
 
-  it('routes DeepSeek official endpoints through the local reverse proxy', () => {
+  it('only routes DeepSeek official endpoints through the local reverse proxy when dev config exists', () => {
     expect(buildApiUrl('https://api.deepseek.com', 'chat/completions', null, false)).toBe(
-      '/deepseek-proxy/chat/completions',
+      'https://api.deepseek.com/v1/chat/completions',
     )
-    expect(buildApiUrl('https://api.deepseek.com/v1', 'chat/completions', null, true)).toBe(
-      '/deepseek-proxy/chat/completions',
+    expect(buildApiUrl('https://api.deepseek.com/v1', 'chat/completions', {
+      enabled: true,
+      prefix: '/api-proxy',
+      target: 'http://api.example.com/v1',
+      changeOrigin: true,
+      secure: false,
+    }, false)).toBe('/deepseek-proxy/chat/completions')
+  })
+
+  it('keeps a self-hosted DeepSeek-compatible reverse proxy URL direct in static deployments', () => {
+    expect(buildApiUrl('https://proxy.example.com/deepseek/v1', 'chat/completions', null, false)).toBe(
+      'https://proxy.example.com/deepseek/v1/chat/completions',
     )
   })
 })

@@ -256,7 +256,7 @@ export default function TextSettingsTab({
               className="w-full rounded-xl border border-gray-200/70 bg-white/60 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-blue-300 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200 dark:focus:border-blue-500/50"
             />
             <div data-selectable-text className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
-              DeepSeek 官网默认 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">https://api.deepseek.com</code>，请求会走本地反代。
+              本地开发可使用 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">https://api.deepseek.com</code> 并由 Vite 反代；GitHub Pages 等静态站没有该路由，请填写支持浏览器跨域和 SSE 的自有反代地址。
             </div>
           </label>
 
@@ -268,7 +268,7 @@ export default function TextSettingsTab({
                 onChange={(e) => updateTextProfile({ apiKey: e.target.value })}
                 onBlur={(e) => updateTextProfile({ apiKey: e.target.value }, true)}
                 type={showApiKey ? 'text' : 'password'}
-                placeholder={allowsEmptyDeepSeekApiKey(textProfile) ? '本地反代已注入，可留空' : 'sk-...'}
+                placeholder={import.meta.env.DEV && allowsEmptyDeepSeekApiKey(textProfile) ? '本地代理已注入 Key 时可留空' : '填写该接口所需的 API Key'}
                 className="w-full rounded-xl border border-gray-200/70 bg-white/60 px-3 py-2.5 pr-10 text-sm text-gray-700 outline-none transition focus:border-blue-300 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200 dark:focus:border-blue-500/50"
               />
               <button

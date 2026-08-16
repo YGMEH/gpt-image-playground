@@ -414,6 +414,54 @@ describe('callAgentResponsesApi', () => {
     expect(outputItemSnapshots[outputItemSnapshots.length - 1]).toBe(1)
   })
 
+  it('streams Chat Completions text and reassembles tool-call deltas', async () => {
+    const streamBody = [
+      `data: ${JSON.stringify({ id: 'chat_stream_1', choices: [{ delta: { content: 'Hel' } }] })}`,
+      '',
+      `data: ${JSON.stringify({ choices: [{ delta: { content: 'lo', tool_calls: [{ index: 0, id: 'call_1', function: { name: 'generate_image', arguments: '{"prompt":"cat' } }] } }] })}`,
+      '',
+      `data: ${JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, function: { arguments: '"}' } }] } }] })}`,
+      '',
+      'data: [DONE]',
+      '',
+    ].join('\n')
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(streamBody, {
+      status: 200,
+      headers: { 'Content-Type': 'text/event-stream' },
+    }))
+    const textDeltas: string[] = []
+    const outputSnapshots: string[] = []
+    const profile = createDefaultOpenAIProfile({
+      apiKey: 'test-key',
+      apiMode: 'chat',
+      model: 'deepseek-chat',
+      baseUrl: 'https://api.deepseek.com',
+    })
+    const result = await callAgentResponsesApi({
+      settings: { ...DEFAULT_SETTINGS, agentApiConfigMode: 'hybrid' },
+      profile,
+      params: DEFAULT_PARAMS,
+      input: [{ role: 'user', content: [{ type: 'input_text', text: 'make it' }] }],
+      onTextDelta: (delta) => textDeltas.push(delta),
+      onOutputItems: (items) => outputSnapshots.push(items.map((item) => item.type).join(',')),
+    })
+    const [, init] = fetchMock.mock.calls[0]
+    const body = JSON.parse(String((init as RequestInit).body))
+    expect(body.stream).toBe(true)
+    expect(textDeltas).toEqual(['Hel', 'lo'])
+    expect(result.responseId).toBe('chat_stream_1')
+    expect(result.text).toBe('Hello')
+    expect(result.outputItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        type: 'function_call',
+        call_id: 'call_1',
+        name: 'generate_image',
+        arguments: '{"prompt":"cat"}',
+      }),
+    ]))
+    expect(outputSnapshots.length).toBeGreaterThan(0)
+  })
+
   it('sends Chat Completions requests for chat profiles and converts tool calls', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
       id: 'chatcmpl_1',
@@ -449,7 +497,7 @@ describe('callAgentResponsesApi', () => {
       input: [{ role: 'user', content: [{ type: 'input_text', text: '帮我做一张封面' }] }],
     })
 
-    expect(String(fetchMock.mock.calls[0][0])).toBe('/deepseek-proxy/chat/completions')
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.deepseek.com/v1/chat/completions')
     const [, init] = fetchMock.mock.calls[0]
     const body = JSON.parse(String((init as RequestInit).body))
     expect(body.messages[0]).toMatchObject({ role: 'system' })
@@ -562,7 +610,7 @@ describe('callAgentResponsesApi', () => {
       prompt: '帮我做一张封面',
     })
 
-    expect(String(fetchMock.mock.calls[0][0])).toBe('/deepseek-proxy/chat/completions')
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.deepseek.com/v1/chat/completions')
     const [, init] = fetchMock.mock.calls[0]
     const body = JSON.parse(String((init as RequestInit).body))
     expect(body.messages[0]).toMatchObject({ role: 'system' })

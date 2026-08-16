@@ -757,6 +757,87 @@ function parseChatCompletionPayload(payload: unknown): AgentApiResult {
   }
 }
 
+async function parseChatCompletionsStreamResponse(
+  response: Response,
+  signal?: AbortSignal,
+  callerSignal?: AbortSignal,
+  onTextDelta?: (delta: string) => void,
+  onOutputItems?: (outputItems: ResponsesOutputItem[]) => void,
+): Promise<AgentApiResult> {
+  let responseId: string | undefined
+  let text = ''
+  const toolCalls = new Map<number, { id: string; name: string; arguments: string }>()
+
+  const publishToolCalls = () => {
+    const outputItems: ResponsesOutputItem[] = [...toolCalls.entries()]
+      .sort(([left], [right]) => left - right)
+      .filter(([, call]) => call.name)
+      .map(([index, call]) => ({
+        type: 'function_call',
+        call_id: call.id || `call_${index + 1}`,
+        name: call.name,
+        arguments: call.arguments || '{}',
+      }))
+    if (outputItems.length) onOutputItems?.(outputItems)
+  }
+
+  await readJsonServerSentEvents(response, (event) => {
+    if (typeof event.id === 'string' && event.id) responseId = event.id
+    const choices = Array.isArray(event.choices) ? event.choices : []
+    for (const choiceValue of choices) {
+      if (!choiceValue || typeof choiceValue !== 'object') continue
+      const choice = choiceValue as Record<string, unknown>
+      const delta = choice.delta && typeof choice.delta === 'object'
+        ? choice.delta as Record<string, unknown>
+        : {}
+      if (typeof delta.content === 'string' && delta.content) {
+        text += delta.content
+        onTextDelta?.(delta.content)
+      }
+      const chunks = Array.isArray(delta.tool_calls) ? delta.tool_calls : []
+      for (const chunkValue of chunks) {
+        if (!chunkValue || typeof chunkValue !== 'object') continue
+        const chunk = chunkValue as Record<string, unknown>
+        const index = typeof chunk.index === 'number' ? chunk.index : 0
+        const current = toolCalls.get(index) ?? { id: '', name: '', arguments: '' }
+        const fn = chunk.function && typeof chunk.function === 'object'
+          ? chunk.function as Record<string, unknown>
+          : {}
+        toolCalls.set(index, {
+          id: typeof chunk.id === 'string' && chunk.id ? chunk.id : current.id,
+          name: current.name + (typeof fn.name === 'string' ? fn.name : ''),
+          arguments: current.arguments + (typeof fn.arguments === 'string' ? fn.arguments : ''),
+        })
+      }
+    }
+    publishToolCalls()
+  }, {
+    signals: [signal, callerSignal],
+    formatErrorMessage: appendStreamingFormatHint,
+    getEventErrorMessage: getStreamEventErrorMessage,
+  })
+
+  const outputItems: ResponsesOutputItem[] = []
+  if (text.trim()) outputItems.push({ type: 'message', content: [{ type: 'output_text', text }] })
+  for (const [index, call] of [...toolCalls.entries()].sort(([left], [right]) => left - right)) {
+    if (!call.name) continue
+    outputItems.push({
+      type: 'function_call',
+      call_id: call.id || `call_${index + 1}`,
+      name: call.name,
+      arguments: call.arguments || '{}',
+    })
+  }
+  onOutputItems?.(outputItems)
+  return {
+    responseId,
+    text,
+    images: [],
+    outputItems,
+    rawResponsePayload: JSON.stringify({ id: responseId, text, output: outputItems }, null, 2),
+  }
+}
+
 async function callAgentChatCompletionsApi(opts: {
   settings: AppSettings
   profile: ApiProfile
@@ -765,8 +846,10 @@ async function callAgentChatCompletionsApi(opts: {
   input: unknown
   maskDataUrl?: string
   signal?: AbortSignal
+  onTextDelta?: (delta: string) => void
+  onOutputItems?: (outputItems: ResponsesOutputItem[]) => void
 }): Promise<AgentApiResult> {
-  const { settings, profile, imageProfile, params, input, maskDataUrl, signal } = opts
+  const { settings, profile, imageProfile, params, input, maskDataUrl, signal, onTextDelta, onOutputItems } = opts
   const proxyConfig = readClientDevProxyConfig()
   const useApiProxy = shouldUseApiProxy(profile.apiProxy, proxyConfig)
   const controller = new AbortController()
@@ -784,6 +867,7 @@ async function callAgentChatCompletionsApi(opts: {
         createAgentInstructions(settings, (imageProfile ?? profile).codexCli ? params.size : undefined),
       ),
       tools: convertChatToolsToOpenAI(tools),
+      stream: true,
     }
     const response = await fetch(buildApiUrl(profile.baseUrl, 'chat/completions', proxyConfig, useApiProxy), {
       method: 'POST',
@@ -794,6 +878,15 @@ async function callAgentChatCompletionsApi(opts: {
     })
     if (!response.ok) {
       throw new Error(await getApiErrorMessage(response))
+    }
+    if (isEventStreamResponse(response)) {
+      return parseChatCompletionsStreamResponse(
+        response,
+        controller.signal,
+        signal,
+        onTextDelta,
+        onOutputItems,
+      )
     }
     return parseChatCompletionPayload(await response.json())
   } finally {
@@ -838,9 +931,8 @@ export async function callAgentResponsesApi(opts: {
       tools: createAgentTools(params, profile, settings, maskDataUrl),
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
-    if (profile.streamImages) {
-      body.stream = true
-    }
+    // Agent 文本始终使用 SSE；图片中间帧仍由 streamImages 单独控制。
+    body.stream = true
 
     const response = await fetch(buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy), {
       method: 'POST',
@@ -855,7 +947,7 @@ export async function callAgentResponsesApi(opts: {
       throw new Error(maybeAppendStreamingHint(errorMessage, response.status, profile.streamImages))
     }
 
-    if (profile.streamImages && isEventStreamResponse(response)) {
+    if (isEventStreamResponse(response)) {
       return parseAgentStreamResponse(response, mime, controller.signal, signal, onTextDelta, onOutputItems, onImageToolStarted, onImagePartialImage, onImageToolCompleted, onImageToolFailed)
     }
 

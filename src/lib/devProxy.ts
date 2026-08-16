@@ -64,7 +64,12 @@ export function buildApiUrl(
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
   const endpointPath = path.replace(/^\/+/, '')
 
-  if (isDeepSeekOfficialEndpoint(baseUrl) || isDeepSeekOfficialEndpoint(normalizedBaseUrl)) {
+  // `/deepseek-proxy` 由 Vite 开发服务器提供；静态部署（如 GitHub Pages）不存在该路由。
+  // 只有开发环境确实加载了代理配置时才改写，线上自建反代 URL 必须保持直连。
+  if (
+    proxyConfig &&
+    (isDeepSeekOfficialEndpoint(baseUrl) || isDeepSeekOfficialEndpoint(normalizedBaseUrl))
+  ) {
     return `${DEEPSEEK_LOCAL_PROXY_PREFIX}/${endpointPath}`
   }
 
