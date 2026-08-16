@@ -40,15 +40,16 @@ describe('validateApiProfile', () => {
     }))).toBe('缺少 API URL')
   })
 
-  it('allows an empty API key for the official DeepSeek reverse proxy', () => {
+  it('requires an API key for every provider, including official endpoints', () => {
+    // 反代已移除：任何配置（含官方端点）都必须填写 API Key，不再放行空 Key。
     expect(validateApiProfile(createDefaultOpenAIProfile({
-      id: 'deepseek-official',
-      name: 'DeepSeek 官网',
-      baseUrl: 'https://api.deepseek.com',
+      id: 'some-official',
+      name: '某官方服务',
+      baseUrl: 'https://api.example.com',
       apiKey: '',
       apiMode: 'chat',
-      model: 'deepseek-chat',
-    }))).toBeNull()
+      model: 'gpt-4o-mini',
+    }))).toBe('缺少 API Key')
   })
 })
 

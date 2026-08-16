@@ -1,10 +1,8 @@
-import { defineConfig, loadEnv, type ProxyOptions } from 'vite'
+import { defineConfig, type ProxyOptions } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync } from 'fs'
 import { normalizeDevProxyConfig } from './src/lib/devProxy'
-
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
-
 function loadDevProxyConfig() {
   try {
     return normalizeDevProxyConfig(
@@ -17,32 +15,9 @@ function loadDevProxyConfig() {
   }
 }
 
-function createDeepSeekProxy(apiKey: string): ProxyOptions {
-  return {
-    target: 'https://api.deepseek.com',
-    changeOrigin: true,
-    secure: true,
-    rewrite: (path) => path.replace(/^\/deepseek-proxy/, '/v1'),
-    configure(proxy) {
-      proxy.on('proxyReq', (proxyReq) => {
-        const existing = proxyReq.getHeader('authorization')
-        const hasAuth = typeof existing === 'string' && existing.trim() && !/^Bearer\s*$/i.test(existing)
-        if (!hasAuth && apiKey) {
-          proxyReq.setHeader('Authorization', `Bearer ${apiKey}`)
-        }
-      })
-    },
-  }
-}
-
-export default defineConfig(({ command, mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const deepseekApiKey = (env.DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY || '').trim()
+export default defineConfig(({ command }) => {
   const devProxyConfig = command === 'serve' ? loadDevProxyConfig() : null
-  const proxy: Record<string, ProxyOptions> = {
-    '/deepseek-proxy': createDeepSeekProxy(deepseekApiKey),
-  }
-
+  const proxy: Record<string, ProxyOptions> = {}
   if (devProxyConfig?.enabled) {
     proxy[devProxyConfig.prefix] = {
       target: devProxyConfig.target,

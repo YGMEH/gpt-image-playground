@@ -37,20 +37,21 @@ describe('buildApiUrl', () => {
     )
   })
 
-  it('only routes DeepSeek official endpoints through the local reverse proxy when dev config exists', () => {
+  it('always connects to provider endpoints directly after the DeepSeek proxy removal', () => {
     expect(buildApiUrl('https://api.deepseek.com', 'chat/completions', null, false)).toBe(
       'https://api.deepseek.com/v1/chat/completions',
     )
+    // 即使存在 dev 代理配置，未显式开启 useApiProxy 时也一律直连，不再改写为 /deepseek-proxy。
     expect(buildApiUrl('https://api.deepseek.com/v1', 'chat/completions', {
       enabled: true,
       prefix: '/api-proxy',
       target: 'http://api.example.com/v1',
       changeOrigin: true,
       secure: false,
-    }, false)).toBe('/deepseek-proxy/chat/completions')
+    }, false)).toBe('https://api.deepseek.com/v1/chat/completions')
   })
 
-  it('keeps a self-hosted DeepSeek-compatible reverse proxy URL direct in static deployments', () => {
+  it('keeps a self-hosted reverse proxy URL direct', () => {
     expect(buildApiUrl('https://proxy.example.com/deepseek/v1', 'chat/completions', null, false)).toBe(
       'https://proxy.example.com/deepseek/v1/chat/completions',
     )

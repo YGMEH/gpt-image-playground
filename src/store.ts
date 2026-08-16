@@ -565,7 +565,7 @@ export const useStore = create<AppState>()(
         if (settings.agentApiConfigMode === 'off' && !isAgentTextApiProfile(activeProfile)) {
           state.setConfirmDialog({
             title: '需要文本模型配置',
-            message: `当前配置「${activeProfile.name}」不具备 Agent 模式需要的对话能力。\n\n请前往「文本模型」页选择 DeepSeek 官网，或把当前配置改成 Chat Completions / Responses API。`,
+            message: `当前配置「${activeProfile.name}」不具备 Agent 模式需要的对话能力。\n\n请前往「文本模型」页选择或新建一个 Chat Completions / Responses API 的文本配置。`,
             confirmText: '去设置',
             cancelText: '取消',
             action: () => {
@@ -590,7 +590,7 @@ export const useStore = create<AppState>()(
 
         state.setConfirmDialog({
           title: '配置不支持 Agent 模式',
-          message: `当前配置「${activeProfile.name}」所属的服务商暂不支持 Agent 模式。Agent 模式需要使用 Chat Completions 或 Responses API 的 OpenAI 兼容文本模型配置。\n\n请前往「文本模型」页选择 DeepSeek 官网，或切换/新建一个可用文本配置。`,
+          message: `当前配置「${activeProfile.name}」所属的服务商暂不支持 Agent 模式。Agent 模式需要使用 Chat Completions 或 Responses API 的 OpenAI 兼容文本模型配置。\n\n请前往「文本模型」页选择或新建一个可用的文本配置。`,
           confirmText: '去设置',
           cancelText: '取消',
           action: () => {

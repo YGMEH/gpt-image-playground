@@ -17,7 +17,6 @@ import { DEFAULT_AGENT_MAX_TOOL_ROUNDS, DEFAULT_STREAM_PARTIAL_IMAGES, DEFAULT_Z
 import { shouldUseApiProxy } from './devProxy'
 import { normalizeReasoningEffort, normalizeStreamPartialImages, parseDefaultApiUrl } from './defaultApiUrl'
 import { readRuntimeEnv } from './runtimeEnv'
-import { allowsEmptyDeepSeekApiKey, DEFAULT_CHAT_MODEL } from './deepseekModelCatalog'
 import { isImportableConfigUrl } from './customProviderConfigUrl'
 
 const OPENAI_DEFAULT_BASE_URL = 'https://api.openai.com/v1'
@@ -31,7 +30,7 @@ const DEFAULT_API_URL_PATCH = isImportableConfigUrl(RAW_DEFAULT_API_URL)
 const DEFAULT_BASE_URL = DEFAULT_API_URL_PATCH?.baseUrl ?? ''
 export const DEFAULT_IMAGES_MODEL = 'gpt-image-2'
 export const DEFAULT_RESPONSES_MODEL = 'gpt-5.6-sol'
-export { DEFAULT_CHAT_MODEL }
+export const DEFAULT_CHAT_MODEL = 'gpt-4o-mini'
 export const DEFAULT_FAL_BASE_URL = 'https://fal.run'
 export const DEFAULT_FAL_MODEL = 'openai/gpt-image-2'
 export const DEFAULT_OPENAI_PROFILE_ID = 'default-openai'
@@ -700,7 +699,7 @@ export function getActiveApiProfile(settings: Partial<AppSettings> | unknown): A
 export function validateApiProfile(profile: ApiProfile): string | null {
   if (!profile.name.trim()) return '缺少名称'
   if (profile.provider !== 'fal' && !profile.baseUrl.trim() && !shouldUseApiProxy(profile.apiProxy)) return '缺少 API URL'
-  if (!profile.apiKey.trim() && !allowsEmptyDeepSeekApiKey(profile)) return '缺少 API Key'
+  if (!profile.apiKey.trim()) return '缺少 API Key'
   if (!profile.model.trim()) return '缺少模型 ID'
   return null
 }

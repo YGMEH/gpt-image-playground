@@ -1,24 +1,18 @@
 import type { ApiProfile, AppSettings, CustomProviderDefinition } from '../types'
 import {
   DEFAULT_API_TIMEOUT,
-  DEFAULT_CHAT_MODEL,
   DEFAULT_IMAGES_MODEL,
   DEFAULT_OPENAI_PROFILE_ID,
-  isAgentTextApiProfile,
   normalizeSettings,
 } from './apiProfiles'
-import { DEEPSEEK_OFFICIAL_BASE_URL, getDeepSeekCatalogModels } from './deepseekModelCatalog'
 import { getGrsaiCatalogModels } from './grsaiModelCatalog'
 import { readRuntimeEnv } from './runtimeEnv'
-
 export const LOCAL_GRSAI_PROVIDER_ID = 'custom-grsai-dakka'
 export const LOCAL_GRSAI_PROFILE_ID = 'grsai-dakka-default'
 export const LOCAL_CODE2ALITA_HIGH_PROFILE_ID = 'code2alita-high'
 export const LOCAL_CODE2ALITA_LOW_PROFILE_ID = 'code2alita-low'
-export const LOCAL_DEEPSEEK_PROFILE_ID = 'deepseek-official'
 export const LOCAL_GRSAI_BASE_URL = 'https://grsai.dakka.com.cn/v1'
 export const LOCAL_CODE2ALITA_BASE_URL = 'https://code2alita.com/v1'
-export const LOCAL_DEEPSEEK_BASE_URL = DEEPSEEK_OFFICIAL_BASE_URL
 
 function readLocalKey(value: string | undefined) {
   return readRuntimeEnv(value)
@@ -111,20 +105,6 @@ export function createLocalStudioProfiles(): ApiProfile[] {
       apiProxy: false,
       streamImages: false,
     },
-    {
-      id: LOCAL_DEEPSEEK_PROFILE_ID,
-      name: 'DeepSeek 官网',
-      provider: 'openai',
-      baseUrl: LOCAL_DEEPSEEK_BASE_URL,
-      apiKey: '',
-      model: DEFAULT_CHAT_MODEL,
-      availableModels: getDeepSeekCatalogModels(),
-      timeout: DEFAULT_API_TIMEOUT,
-      apiMode: 'chat',
-      codexCli: false,
-      apiProxy: false,
-      streamImages: false,
-    },
   ]
 }
 
@@ -193,31 +173,10 @@ export function ensureLocalStudioSettings(settings: AppSettings): AppSettings {
     ? LOCAL_GRSAI_PROFILE_ID
     : settings.activeProfileId
 
-  const next = normalizeSettings({
+  return normalizeSettings({
     ...settings,
     customProviders,
     profiles,
     activeProfileId,
-  })
-
-  const nextActive = next.profiles.find((profile) => profile.id === next.activeProfileId) ?? next.profiles[0]
-  const incomingTextProfileId = typeof settings.agentTextProfileId === 'string' ? settings.agentTextProfileId : ''
-  const hasCustomAgentText = Boolean(incomingTextProfileId && incomingTextProfileId !== LOCAL_DEEPSEEK_PROFILE_ID)
-  const shouldSeedHybridText = (
-    next.agentApiConfigMode === 'off'
-    && existingProfileIds.has(LOCAL_DEEPSEEK_PROFILE_ID)
-    && !hasCustomAgentText
-    && !isAgentTextApiProfile(nextActive)
-  )
-
-  return normalizeSettings({
-    ...next,
-    agentApiConfigMode: shouldSeedHybridText ? 'hybrid' : next.agentApiConfigMode,
-    agentTextProfileId: shouldSeedHybridText || !next.agentTextProfileId
-      ? LOCAL_DEEPSEEK_PROFILE_ID
-      : next.agentTextProfileId,
-    agentImageProfileId: shouldSeedHybridText || !next.agentImageProfileId
-      ? next.activeProfileId
-      : next.agentImageProfileId,
   })
 }

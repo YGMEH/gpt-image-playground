@@ -83,7 +83,7 @@ export default function AgentSettingsTab({
               </div>
             </div>
             <div data-selectable-text className="text-xs text-gray-500 dark:text-gray-500">
-用于对话和调用工具，支持 Responses API 与 Chat Completions（如 DeepSeek 官网）。可在「文本模型」页修改密钥和模型。
+用于对话和调用工具，支持 Responses API 与 Chat Completions 等 OpenAI 兼容文本接口。可在「文本模型」页修改密钥和模型。
             </div>
           </div>
 

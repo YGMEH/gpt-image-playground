@@ -122,6 +122,7 @@ export default function SettingsModal() {
   
   const [draft, setDraft] = useState<AppSettings>(normalizeSettings(settings))
   const [timeoutInput, setTimeoutInput] = useState(String(getActiveApiProfile(settings).timeout))
+  const [baseUrlInput, setBaseUrlInput] = useState(() => getActiveApiProfile(normalizeSettings(settings)).baseUrl)
   const [agentMaxToolRoundsInput, setAgentMaxToolRoundsInput] = useState(String(settings.agentMaxToolRounds))
   const [showApiKey, setShowApiKey] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
@@ -274,6 +275,7 @@ export default function SettingsModal() {
 
   useEffect(() => {
     setTimeoutInput(String(activeProfile.timeout))
+    setBaseUrlInput(activeProfile.baseUrl)
   }, [activeProfile.id, activeProfile.timeout])
 
   useEffect(() => {
@@ -503,9 +505,10 @@ export default function SettingsModal() {
     try {
       const models = await fetchProviderModels(draft, activeProfile)
       if (modelRefreshRequestIdRef.current !== requestId) return
-      const nextModel = activeProfile.model.trim() && models.includes(activeProfile.model.trim())
+      // 只更新候选列表，不覆盖用户已填的模型；仅在模型为空时回填第一项。
+      const nextModel = activeProfile.model.trim()
         ? activeProfile.model.trim()
-        : models[0]
+        : (models[0] ?? activeProfile.model)
       commitActiveProfilePatch({ availableModels: models, model: nextModel })
       setModelRefreshStatus(`连接成功，获取 ${models.length} 个模型`)
       showToast(`已获取 ${models.length} 个模型`, 'success')
@@ -1208,6 +1211,7 @@ export default function SettingsModal() {
                 textProfileOptions={agentTextProfileOptions}
                 defaultConfigOnly={defaultConfigOnly}
                 commitSettings={commitSettings}
+                setDraftOnly={setDraft}
                 showToast={showToast}
               />
             )}
@@ -1444,9 +1448,9 @@ export default function SettingsModal() {
                     <span className="block text-sm text-gray-600 dark:text-gray-300">API URL</span>
                   </div>
                   <input
-                    value={activeProfile.baseUrl}
-                    onChange={(e) => updateActiveProfile({ baseUrl: e.target.value })}
-                    onBlur={(e) => commitActiveProfilePatch({ baseUrl: e.target.value })}
+                    value={baseUrlInput}
+                    onChange={(e) => setBaseUrlInput(e.target.value)}
+                    onBlur={(e) => commitActiveProfilePatch({ baseUrl: e.target.value.trim() })}
                     type="text"
                     disabled={apiProxyEnabled}
                     placeholder={activeProfile.provider === 'fal' ? DEFAULT_FAL_BASE_URL : DEFAULT_SETTINGS.baseUrl}
@@ -1598,7 +1602,7 @@ export default function SettingsModal() {
                   ) : (activeProfile.apiMode ?? DEFAULT_SETTINGS.apiMode) === 'responses' ? (
                     <>Responses API 需要使用支持 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">image_generation</code> 工具的文本模型，例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_RESPONSES_MODEL}</code>。</>
                   ) : (activeProfile.apiMode ?? DEFAULT_SETTINGS.apiMode) === 'chat' ? (
-                    <>Chat Completions 用于文本对话和工具调用，例如 DeepSeek 的 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_CHAT_MODEL}</code>。</>
+                    <>Chat Completions 用于文本对话和工具调用，模型 ID 由你填写（例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_CHAT_MODEL}</code>）。</>
                   ) : (
                     <>Images API 需要使用 GPT Image 模型，例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_IMAGES_MODEL}</code>。</>
                   )}

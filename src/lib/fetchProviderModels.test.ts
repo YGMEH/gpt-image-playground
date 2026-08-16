@@ -3,14 +3,12 @@ import {
   canRefreshProviderModels,
   fetchProviderModels,
   getGrsaiCatalogModels,
-  isDeepSeekCatalogProvider,
   isGrsaiCatalogModel,
   isGrsaiChatModel,
   isGrsaiImageModel,
   parseGrsaiCatalogHtml,
   parseProviderModelIds,
 } from './fetchProviderModels'
-import { getDeepSeekCatalogModels } from './deepseekModelCatalog'
 import { createDefaultOpenAIProfile, normalizeSettings } from './apiProfiles'
 
 describe('parseProviderModelIds', () => {
@@ -93,16 +91,16 @@ describe('canRefreshProviderModels', () => {
     expect(canRefreshProviderModels(settings, settings.profiles[0])).toBe(true)
   })
 
-  it('allows DeepSeek catalog providers without a live network refresh', () => {
+  it('treats OpenAI-compatible chat providers as refreshable via the network', () => {
     const settings = normalizeSettings({
       profiles: [createDefaultOpenAIProfile({
-        name: 'DeepSeek 官网',
-        baseUrl: 'https://api.deepseek.com',
-        model: 'deepseek-chat',
+        name: '自定义文本',
+        baseUrl: 'https://api.example.com',
+        model: 'gpt-4o-mini',
         apiMode: 'chat',
+        apiKey: 'sk-test',
       })],
     })
-    expect(isDeepSeekCatalogProvider(settings.profiles[0])).toBe(true)
     expect(canRefreshProviderModels(settings, settings.profiles[0])).toBe(true)
   })
 })
@@ -134,26 +132,24 @@ describe('parseGrsaiCatalogHtml', () => {
   })
 })
 
-describe('DeepSeek local catalog', () => {
-  it('returns the builtin DeepSeek models without calling fetch', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch')
+describe('network model refresh', () => {
+  it('requests /models for OpenAI-compatible providers and parses the list', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ data: [{ id: 'gpt-4o-mini' }, { id: 'gpt-4o' }] }), { status: 200 }),
+    )
     const settings = normalizeSettings({
       profiles: [createDefaultOpenAIProfile({
-        name: 'DeepSeek 官网',
-        baseUrl: 'https://api.deepseek.com',
-        model: 'deepseek-chat',
+        name: '自定义文本',
+        baseUrl: 'https://api.example.com',
+        model: 'gpt-4o-mini',
         apiMode: 'chat',
+        apiKey: 'sk-test',
       })],
     })
 
-    await expect(fetchProviderModels(settings, settings.profiles[0])).resolves.toEqual(getDeepSeekCatalogModels())
-    expect(fetchMock).not.toHaveBeenCalled()
-    expect(getDeepSeekCatalogModels()).toEqual([
-      'deepseek-chat',
-      'deepseek-reasoner',
-      'deepseek-v4-flash',
-      'deepseek-v4-pro',
-    ])
+    await expect(fetchProviderModels(settings, settings.profiles[0])).resolves.toEqual(['gpt-4o', 'gpt-4o-mini'])
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.example.com/v1/models')
     fetchMock.mockRestore()
   })
 })

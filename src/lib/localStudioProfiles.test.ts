@@ -3,7 +3,6 @@ import { createDefaultOpenAIProfile, DEFAULT_OPENAI_PROFILE_ID, DEFAULT_SETTINGS
 import {
   LOCAL_CODE2ALITA_HIGH_PROFILE_ID,
   LOCAL_CODE2ALITA_LOW_PROFILE_ID,
-  LOCAL_DEEPSEEK_PROFILE_ID,
   LOCAL_GRSAI_PROFILE_ID,
   LOCAL_GRSAI_PROVIDER_ID,
   ensureLocalStudioSettings,
@@ -18,13 +17,9 @@ describe('ensureLocalStudioSettings', () => {
       LOCAL_GRSAI_PROFILE_ID,
       LOCAL_CODE2ALITA_HIGH_PROFILE_ID,
       LOCAL_CODE2ALITA_LOW_PROFILE_ID,
-      LOCAL_DEEPSEEK_PROFILE_ID,
     ])
     expect(next.customProviders.map((provider) => provider.id)).toContain(LOCAL_GRSAI_PROVIDER_ID)
     expect(next.activeProfileId).toBe(LOCAL_GRSAI_PROFILE_ID)
-    expect(next.agentApiConfigMode).toBe('hybrid')
-    expect(next.agentTextProfileId).toBe(LOCAL_DEEPSEEK_PROFILE_ID)
-    expect(next.agentImageProfileId).toBe(LOCAL_GRSAI_PROFILE_ID)
     expect(next.profiles.find((profile) => profile.id === LOCAL_GRSAI_PROFILE_ID)).toMatchObject({
       name: 'Grsai Dakka',
       provider: LOCAL_GRSAI_PROVIDER_ID,
@@ -80,11 +75,7 @@ describe('ensureLocalStudioSettings', () => {
       LOCAL_GRSAI_PROFILE_ID,
       LOCAL_CODE2ALITA_HIGH_PROFILE_ID,
       LOCAL_CODE2ALITA_LOW_PROFILE_ID,
-      LOCAL_DEEPSEEK_PROFILE_ID,
     ])
-    expect(next.agentApiConfigMode).toBe('hybrid')
-    expect(next.agentTextProfileId).toBe(LOCAL_DEEPSEEK_PROFILE_ID)
-    expect(next.agentImageProfileId).toBe(DEFAULT_OPENAI_PROFILE_ID)
   })
 
   it('does not override an existing custom Agent text setup', () => {
@@ -101,19 +92,10 @@ describe('ensureLocalStudioSettings', () => {
     expect(next.agentTextProfileId).toBe(DEFAULT_OPENAI_PROFILE_ID)
   })
 
-  it('seeds DeepSeek as the default hybrid text profile on an untouched studio', () => {
+  it('does not seed any text/chat profile on an untouched studio', () => {
     const next = ensureLocalStudioSettings(DEFAULT_SETTINGS)
-    expect(next.profiles.find((profile) => profile.id === LOCAL_DEEPSEEK_PROFILE_ID)).toMatchObject({
-      name: 'DeepSeek 官网',
-      provider: 'openai',
-      baseUrl: 'https://api.deepseek.com',
-      apiKey: '',
-      model: 'deepseek-chat',
-      apiMode: 'chat',
-    })
-    expect(next.agentApiConfigMode).toBe('hybrid')
-    expect(next.agentTextProfileId).toBe(LOCAL_DEEPSEEK_PROFILE_ID)
-    expect(next.agentImageProfileId).toBe(LOCAL_GRSAI_PROFILE_ID)
+    expect(next.profiles.some((profile) => profile.apiMode === 'chat')).toBe(false)
+    expect(next.agentApiConfigMode).toBe('off')
   })
 
   it('fills an empty local key from env without replacing an existing key', () => {

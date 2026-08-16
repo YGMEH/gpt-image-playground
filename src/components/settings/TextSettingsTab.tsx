@@ -8,7 +8,6 @@ import {
   isAgentTextApiProfile,
   normalizeSettings,
 } from '../../lib/apiProfiles'
-import { allowsEmptyDeepSeekApiKey } from '../../lib/deepseekModelCatalog'
 import { canRefreshProviderModels, fetchProviderModels } from '../../lib/fetchProviderModels'
 import Select from '../Select'
 import { PlusIcon, RefreshIcon, TrashIcon } from '../icons'
@@ -25,6 +24,7 @@ interface TextSettingsTabProps {
   textProfileOptions: SelectOption[]
   defaultConfigOnly: boolean
   commitSettings: (nextDraft: AppSettings) => void
+  setDraftOnly: (nextDraft: AppSettings) => void
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void
 }
 
@@ -45,10 +45,12 @@ export default function TextSettingsTab({
   textProfileOptions,
   defaultConfigOnly,
   commitSettings,
+  setDraftOnly,
   showToast,
 }: TextSettingsTabProps) {
   const [showApiKey, setShowApiKey] = useState(false)
   const [timeoutInput, setTimeoutInput] = useState(String(selectedTextProfile?.timeout ?? DEFAULT_SETTINGS.timeout))
+  const [baseUrlInput, setBaseUrlInput] = useState(selectedTextProfile?.baseUrl ?? '')
   const [modelRefreshStatus, setModelRefreshStatus] = useState('尚未刷新')
   const [isRefreshingModels, setIsRefreshingModels] = useState(false)
   const modelRefreshRequestIdRef = useRef(0)
@@ -67,6 +69,7 @@ export default function TextSettingsTab({
 
   useEffect(() => {
     setTimeoutInput(String(textProfile?.timeout ?? DEFAULT_SETTINGS.timeout))
+    setBaseUrlInput(textProfile?.baseUrl ?? '')
     setShowApiKey(false)
   }, [textProfile?.id, textProfile?.timeout])
 
@@ -90,13 +93,13 @@ export default function TextSettingsTab({
 
   const updateTextProfile = (patch: Partial<ApiProfile>, commit = false) => {
     if (!textProfile) return
-    const nextDraft = {
-      ...draft,
-      agentTextProfileId: textProfile.id,
-      profiles: draft.profiles.map((profile) => profile.id === textProfile.id ? { ...profile, ...patch } : profile),
+    const nextProfiles = draft.profiles.map((profile) => profile.id === textProfile.id ? { ...profile, ...patch } : profile)
+    if (commit) {
+      commitSettings({ ...draft, agentTextProfileId: textProfile.id, profiles: nextProfiles })
+    } else {
+      // 编辑中（onChange）只更新本地 draft，不规范化，保证 URL 等可自由清空/删除。
+      setDraftOnly({ ...draft, agentTextProfileId: textProfile.id, profiles: nextProfiles })
     }
-    if (commit) commitSettings(nextDraft)
-    else commitSettings(nextDraft)
   }
 
   const switchTextProfile = (id: string) => {
@@ -167,9 +170,10 @@ export default function TextSettingsTab({
     try {
       const models = await fetchProviderModels(draft, textProfile)
       if (modelRefreshRequestIdRef.current !== requestId) return
-      const nextModel = textProfile.model.trim() && models.includes(textProfile.model.trim())
+      // 只更新候选列表，不覆盖用户已填的模型；仅在模型为空时回填第一项。
+      const nextModel = textProfile.model.trim()
         ? textProfile.model.trim()
-        : models[0]
+        : (models[0] ?? textProfile.model)
       updateTextProfile({ availableModels: models, model: nextModel }, true)
       setModelRefreshStatus(`连接成功，获取 ${models.length} 个模型`)
       showToast(`已获取 ${models.length} 个模型`, 'success')
@@ -187,7 +191,7 @@ export default function TextSettingsTab({
     <div className="space-y-4">
       <div className="rounded-2xl bg-gray-50/80 p-4 border border-gray-200/60 dark:bg-white/[0.02] dark:border-white/[0.05]">
         <div data-selectable-text className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400">
-          这里只改文本模型，不会影响图库当前选中的图像配置。Agent 混合模式会用这里的配置对话和调用工具，默认使用 DeepSeek 官网的 <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-[10px] dark:bg-white/[0.06]">deepseek-chat</code>。
+          这里只改文本模型，不会影响图库当前选中的图像配置。Agent 混合模式会用这里的配置对话和调用工具；模型 ID 由你自行填写，或点「刷新模型」从接口拉取候选。
         </div>
       </div>
 
@@ -248,15 +252,15 @@ export default function TextSettingsTab({
           <label className="block">
             <span className="mb-1.5 block text-sm text-gray-600 dark:text-gray-300">API URL</span>
             <input
-              value={textProfile.baseUrl}
-              onChange={(e) => updateTextProfile({ baseUrl: e.target.value })}
-              onBlur={(e) => updateTextProfile({ baseUrl: e.target.value }, true)}
+              value={baseUrlInput}
+              onChange={(e) => setBaseUrlInput(e.target.value)}
+              onBlur={(e) => updateTextProfile({ baseUrl: e.target.value.trim() }, true)}
               type="text"
-              placeholder="https://api.deepseek.com"
+              placeholder="https://api.example.com"
               className="w-full rounded-xl border border-gray-200/70 bg-white/60 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-blue-300 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200 dark:focus:border-blue-500/50"
             />
             <div data-selectable-text className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
-              本地开发可使用 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">https://api.deepseek.com</code> 并由 Vite 反代；GitHub Pages 等静态站没有该路由，请填写支持浏览器跨域和 SSE 的自有反代地址。
+              填写该文本服务的基础地址（如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">https://api.example.com/v1</code>）；留空时需在下方提供可用代理。失焦后自动补全 https 与 /v1。
             </div>
           </label>
 
@@ -268,7 +272,7 @@ export default function TextSettingsTab({
                 onChange={(e) => updateTextProfile({ apiKey: e.target.value })}
                 onBlur={(e) => updateTextProfile({ apiKey: e.target.value }, true)}
                 type={showApiKey ? 'text' : 'password'}
-                placeholder={import.meta.env.DEV && allowsEmptyDeepSeekApiKey(textProfile) ? '本地代理已注入 Key 时可留空' : '填写该接口所需的 API Key'}
+                placeholder="填写该接口所需的 API Key"
                 className="w-full rounded-xl border border-gray-200/70 bg-white/60 px-3 py-2.5 pr-10 text-sm text-gray-700 outline-none transition focus:border-blue-300 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200 dark:focus:border-blue-500/50"
               />
               <button
@@ -313,7 +317,7 @@ export default function TextSettingsTab({
               className="w-full rounded-xl border border-gray-200/70 bg-white/60 px-3 py-2.5 text-sm text-gray-700 outline-none transition focus:border-blue-300 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-gray-200 dark:focus:border-blue-500/50"
             />
             <div data-selectable-text className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
-              DeepSeek 官网使用 Chat Completions；OpenAI 原生 Agent 使用 Responses API。
+              多数 OpenAI 兼容文本服务使用 Chat Completions；OpenAI 原生 Agent 使用 Responses API。
             </div>
           </div>
 
@@ -353,7 +357,7 @@ export default function TextSettingsTab({
             <div data-selectable-text className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
               {textProfile.apiMode === 'responses'
                 ? <>Responses API 需要支持工具调用的文本模型，例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_RESPONSES_MODEL}</code>。</>
-                : <>Chat Completions 默认使用 DeepSeek 的 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_CHAT_MODEL}</code>，也可选 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">deepseek-reasoner</code>。刷新模型只会读取本地清单，不会请求外网。</>}
+                : <>Chat Completions 为通用文本对话接口，模型 ID 由你填写（例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_CHAT_MODEL}</code>）。「刷新模型」会请求接口的 /models 拉取候选。</>}
               <div className="mt-1">{modelRefreshStatus}</div>
             </div>
           </div>

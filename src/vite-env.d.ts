@@ -13,7 +13,6 @@ interface ImportMetaEnv {
   readonly VITE_GRSAI_DAKKA_API_KEY?: string
   readonly VITE_CODE2ALITA_HIGH_API_KEY?: string
   readonly VITE_CODE2ALITA_LOW_API_KEY?: string
-  readonly VITE_DEEPSEEK_API_KEY?: string
 }
 
 interface ImportMeta {

@@ -2,7 +2,6 @@ import type { ApiProfile, AppSettings, CustomProviderDefinition } from '../types
 import { buildApiUrl, readClientDevProxyConfig, shouldUseApiProxy } from './devProxy'
 import { getApiErrorMessage } from './imageApiShared'
 import { isOpenAICompatibleProvider, normalizeAvailableModels } from './apiProfiles'
-import { getDeepSeekCatalogModels, isDeepSeekOfficialEndpoint } from './deepseekModelCatalog'
 import { getGrsaiCatalogModels, isGrsaiCatalogModel } from './grsaiModelCatalog'
 
 export {
@@ -33,14 +32,8 @@ export function isGrsaiCatalogProvider(settings: AppSettings, profile: ApiProfil
   return /grsai|dakka\.com\.cn|grsaiapi\.com/.test(haystack)
 }
 
-export function isDeepSeekCatalogProvider(profile: ApiProfile) {
-  const haystack = [profile.name, profile.baseUrl, profile.model].filter(Boolean).join(' ').toLowerCase()
-  return isDeepSeekOfficialEndpoint(haystack) || /deepseek/.test(haystack)
-}
-
 export function canRefreshProviderModels(settings: AppSettings, profile: ApiProfile) {
   if (isGrsaiCatalogProvider(settings, profile)) return true
-  if (isDeepSeekCatalogProvider(profile)) return true
   if (profile.provider === 'fal') return false
   if (!isOpenAICompatibleProvider(settings, profile.provider)) return false
   const customProvider = settings.customProviders.find((item) => item.id === profile.provider)
@@ -87,21 +80,12 @@ function getLocalGrsaiCatalogModels(): string[] {
   return models
 }
 
-function getLocalDeepSeekCatalogModels(): string[] {
-  const models = normalizeAvailableModels(getDeepSeekCatalogModels()) ?? []
-  if (!models.length) throw new Error('本地 DeepSeek 模型目录为空')
-  return models
-}
-
 export async function fetchProviderModels(settings: AppSettings, profile: ApiProfile): Promise<string[]> {
   if (!canRefreshProviderModels(settings, profile)) {
     throw new Error('当前服务商不支持自动刷新模型，请手动填写模型 ID')
   }
   if (isGrsaiCatalogProvider(settings, profile)) {
     return getLocalGrsaiCatalogModels()
-  }
-  if (isDeepSeekCatalogProvider(profile)) {
-    return getLocalDeepSeekCatalogModels()
   }
   if (!profile.apiKey.trim()) {
     throw new Error('请先填写 API Key')
@@ -113,7 +97,7 @@ export async function fetchProviderModels(settings: AppSettings, profile: ApiPro
   const url = buildApiUrl(profile.baseUrl, 'models', readClientDevProxyConfig(), shouldUseApiProxy(profile.apiProxy))
   const controller = new AbortController()
   const timeoutMs = Math.max(8, Math.min(profile.timeout || 30, 60)) * 1000
-  const timer = window.setTimeout(() => controller.abort(), timeoutMs)
+  const timer = globalThis.setTimeout(() => controller.abort(), timeoutMs)
 
   try {
     const response = await fetch(url, {
@@ -142,6 +126,6 @@ export async function fetchProviderModels(settings: AppSettings, profile: ApiPro
     }
     throw error instanceof Error ? error : new Error(String(error))
   } finally {
-    window.clearTimeout(timer)
+    globalThis.clearTimeout(timer)
   }
 }
