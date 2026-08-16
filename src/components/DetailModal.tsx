@@ -15,6 +15,7 @@ import { replaceImageMentionsForApi } from '../lib/promptImageMentions'
 import { CloseIcon, CodeIcon, CopyIcon, DownloadIcon, EditIcon, LinkIcon, TrashIcon } from './icons'
 
 import ViewportTooltip from './ViewportTooltip'
+import TaskWorkflowPanel from './TaskWorkflowPanel'
 
 export default function DetailModal() {
   const tasks = useStore((s) => s.tasks)
@@ -846,6 +847,7 @@ export default function DetailModal() {
           </button>
 
           <div data-selectable-text className="flex-1">
+            <TaskWorkflowPanel task={task} tasks={tasks} onOpenTask={setDetailTaskId} />
             <div className="flex items-center gap-1.5 mb-2">
               <h3 className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                 输入内容

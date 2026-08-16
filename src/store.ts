@@ -73,6 +73,7 @@ import { buildWorkflowSystemPrompt, getWorkflowPromptByKind, type WorkflowPrompt
 import { createPersistedState, mergePersistedAgentConversations, migratePersistedState, normalizePersistedState } from './lib/persistedState'
 import { addImageSizeParam, createTaskDonePatch, createTaskErrorPatch, deriveAgentImageActualParams, deriveGalleryActualParams, firstActualParams, hasActualParams, hasActualSizeParam, mapActualParamsByImage, mapRevisedPromptsByImage, markInterruptedOpenAIRunningTasks } from './lib/taskState'
 import { stripInjectedCodexCliSizePrompt } from './lib/size'
+import { createTaskWorkflowMeta } from './lib/taskWorkflow'
 
 const FAL_RECOVERY_POLL_MS = 10_000
 const CUSTOM_RECOVERY_POLL_MS = 10_000
@@ -311,7 +312,9 @@ interface AppState {
   reusedTaskApiProfileId: string | null
   reusedTaskApiProfileName: string | null
   reusedTaskApiProfileMissing: boolean
+  reusedSourceTaskId: string | null
   setReusedTaskApiProfile: (profileId: string | null, missing?: boolean, profileName?: string | null) => void
+  setReusedSourceTaskId: (taskId: string | null) => void
 
   // Agent
   agentConversations: AgentConversation[]
@@ -733,12 +736,13 @@ export const useStore = create<AppState>()(
       reusedTaskApiProfileId: null,
       reusedTaskApiProfileName: null,
       reusedTaskApiProfileMissing: false,
+      reusedSourceTaskId: null,
       setReusedTaskApiProfile: (profileId, missing = false, profileName = null) => set({
         reusedTaskApiProfileId: profileId,
         reusedTaskApiProfileName: profileName,
         reusedTaskApiProfileMissing: missing,
       }),
-
+      setReusedSourceTaskId: (reusedSourceTaskId) => set({ reusedSourceTaskId }),
       // Agent
       agentConversations: [],
       agentConversationsLoaded: false,
@@ -1728,7 +1732,7 @@ export async function initStore() {
 
 /** 提交新任务 */
 export async function submitTask(options: { allowFullMask?: boolean; useCurrentApiProfileWhenReusedMissing?: boolean } = {}) {
-  const { settings, prompt, inputImages, maskDraft, params, reusedTaskApiProfileId, reusedTaskApiProfileName, reusedTaskApiProfileMissing, showToast, setConfirmDialog } =
+  const { settings, prompt, inputImages, maskDraft, params, reusedTaskApiProfileId, reusedTaskApiProfileName, reusedTaskApiProfileMissing, reusedSourceTaskId, showToast, setConfirmDialog } =
     useStore.getState()
 
   const normalizedSettings = normalizeSettings(settings)
@@ -1819,8 +1823,11 @@ export async function submitTask(options: { allowFullMask?: boolean; useCurrentA
   }
 
   const taskId = genId()
+  const sourceTask = reusedSourceTaskId ? useStore.getState().tasks.find((item) => item.id === reusedSourceTaskId) ?? null : null
+  const workflowMeta = createTaskWorkflowMeta(sourceTask, taskId)
   const task: TaskRecord = {
     id: taskId,
+    ...workflowMeta,
     prompt: prompt.trim(),
     params: taskParams,
     apiProvider: activeProfile.provider,
@@ -1852,7 +1859,7 @@ export async function submitTask(options: { allowFullMask?: boolean; useCurrentA
     useStore.getState().clearInputImages()
   }
   useStore.getState().setReusedTaskApiProfile(null)
-
+  useStore.getState().setReusedSourceTaskId(null)
   // 异步调用 API
   executeTask(taskId)
 }
@@ -3977,7 +3984,7 @@ export async function retryTask(task: TaskRecord) {
 
 /** 复用配置 */
 export async function reuseConfig(task: TaskRecord) {
-  const { settings, setPrompt, setParams, setInputImages, setMaskDraft, clearMaskDraft, showToast, setConfirmDialog, setReusedTaskApiProfile } = useStore.getState()
+  const { settings, setPrompt, setParams, setInputImages, setMaskDraft, clearMaskDraft, showToast, setConfirmDialog, setReusedTaskApiProfile, setReusedSourceTaskId } = useStore.getState()
   const normalizedSettings = normalizeSettings(settings)
   const currentProfile = getActiveApiProfile(settings)
   const matchedProfile = normalizedSettings.reuseTaskApiProfileTemporarily ? getTaskApiProfile(normalizedSettings, task) : null
@@ -4004,6 +4011,7 @@ export async function reuseConfig(task: TaskRecord) {
   }
   setInputImages(imgs)
   setPrompt(task.prompt)
+  setReusedSourceTaskId(task.id)
   const maskTargetImageId = task.maskTargetImageId ?? (task.maskImageId ? task.inputImageIds[0] : null)
   if (maskTargetImageId && task.maskImageId && imgs.some((img) => img.id === maskTargetImageId)) {
     const maskDataUrl = await ensureImageCached(task.maskImageId)

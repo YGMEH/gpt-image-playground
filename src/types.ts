@@ -230,6 +230,14 @@ export interface TaskRecord {
   isFavorite?: boolean
   /** 所属收藏夹 ID 列表 */
   favoriteCollectionIds?: string[]
+  /** 复用配置后新任务的直接来源任务，用于派生链路追溯 */
+  parentTaskId?: string
+  /** 同一方案/迭代链的稳定 ID；旧任务缺失时以自身 id 作为组 */
+  workflowGroupId?: string
+  /** 方案链中的版本序号，从 1 开始 */
+  workflowVersion?: number
+  /** 提示词版本序号，从 1 开始 */
+  promptVersion?: number
   /** 来源模式：画廊 / Agent */
   sourceMode?: AppMode
   /** Agent 对话 ID */
