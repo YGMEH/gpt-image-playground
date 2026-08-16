@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, type ReactNode } from 'react'
+import { memo, useEffect, useState, useRef, type ReactNode } from 'react'
 import type { TaskRecord } from '../types'
 import { useStore, retryTask, stopTaskWaiting } from '../store'
 import { ensureImageThumbnailCached, subscribeImageThumbnail } from '../lib/imageCache'
@@ -59,7 +59,7 @@ function TaskActionButton({
   )
 }
 
-export default function TaskCard({
+function TaskCard({
   task,
   onReuse,
   onEditOutputs,
@@ -765,3 +765,10 @@ export default function TaskCard({
     </div>
   )
 }
+
+/** TaskGrid 会为交互创建短生命周期回调；卡片只由任务数据和选择状态驱动重绘。 */
+export default memo(TaskCard, (previous, next) =>
+  previous.task === next.task &&
+  previous.isSelected === next.isSelected &&
+  previous.disableSwipe === next.disableSwipe
+)
