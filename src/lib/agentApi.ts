@@ -1043,6 +1043,40 @@ ${prompt}` },
 }
 
 /**
+ * 解析工作流 Responses SSE 流，只提取最终提示词文本。
+ * 与正常 Agent 链路一致：Grsai/Gemini 的 Responses 端点要求流式响应，
+ * 非流式请求会被上游以 400 拒绝。
+ */
+async function parseWorkflowResponsesStreamResponse(
+  response: Response,
+  signal?: AbortSignal,
+  callerSignal?: AbortSignal,
+): Promise<string> {
+  let text = ''
+  let completedPayload: ResponsesApiResponse | null = null
+  await readJsonServerSentEvents(response, (event) => {
+    const type = getStringValue(event, 'type')
+    if (type === 'response.output_text.delta') {
+      const delta = getStringValue(event, 'delta')
+      if (delta) text += delta
+      return
+    }
+    const payload = getStreamResponsePayload(event)
+    if (payload) completedPayload = payload
+  }, {
+    signals: [signal, callerSignal],
+    formatErrorMessage: appendStreamingFormatHint,
+    getEventErrorMessage: getStreamEventErrorMessage,
+  })
+  if (text.trim()) return text.trim()
+  if (completedPayload) {
+    const extracted = extractText(completedPayload)
+    if (extracted) return extracted
+  }
+  throw new Error('工作流提示词接口返回格式无效')
+}
+
+/**
  * 工作流元提示词调用：把「元提示词全文 + 只做局部细节微调指令」作为系统消息，
  * 参考图 + 用户补充要求作为用户消息，只让文本（视觉）模型产出最终提示词文本，
  * 不触发任何生图工具。返回模型生成的最终提示词字符串。
@@ -1107,6 +1141,9 @@ export async function callWorkflowPromptApi(opts: {
       model: profile.model || settings.model,
       instructions: systemPrompt,
       input: [{ role: 'user', content }],
+      // Grsai/Gemini 的 Responses 端点同样要求流式响应；
+      // 与常规 Agent Chat 链路保持一致，避免非流式请求被上游以 400 拒绝。
+      stream: true,
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
 
@@ -1118,6 +1155,9 @@ export async function callWorkflowPromptApi(opts: {
       signal: controller.signal,
     })
     if (!response.ok) throw new Error(await getApiErrorMessage(response))
+    if (isEventStreamResponse(response)) {
+      return await parseWorkflowResponsesStreamResponse(response, controller.signal, signal)
+    }
     const payload = normalizeResponsePayload(await response.json())
     if (!payload) throw new Error('工作流提示词接口返回格式无效')
     return extractText(payload)
