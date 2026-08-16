@@ -1081,11 +1081,22 @@ export async function callWorkflowPromptApi(opts: {
         body: JSON.stringify({
           model: profile.model || settings.model,
           messages,
+          // Grsai/Gemini 的 OpenAI 兼容 Chat 端点要求使用流式响应；
+          // 与常规 Agent Chat 链路保持一致，避免非流式请求被上游以 400 拒绝。
+          stream: true,
         }),
         signal: controller.signal,
       })
       if (!response.ok) throw new Error(await getApiErrorMessage(response))
+      if (isEventStreamResponse(response)) {
+        return (await parseChatCompletionsStreamResponse(
+          response,
+          controller.signal,
+          signal,
+        )).text
+      }
       return parseChatCompletionPayload(await response.json()).text
+
     }
 
     const content: Array<Record<string, string>> = [{ type: 'input_text', text: userText }]

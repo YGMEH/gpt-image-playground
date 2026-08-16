@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_PARAMS } from '../types'
 import { createDefaultOpenAIProfile, DEFAULT_SETTINGS } from './apiProfiles'
-import { callAgentConversationTitleApi, callAgentResponsesApi, parseBatchImageCallArguments } from './agentApi'
+import { callAgentConversationTitleApi, callAgentResponsesApi, callWorkflowPromptApi, parseBatchImageCallArguments } from './agentApi'
 
 describe('parseBatchImageCallArguments', () => {
   it('trims ids and prompts, fills missing ids, and skips empty prompts', () => {
@@ -586,6 +586,73 @@ describe('callAgentResponsesApi', () => {
     const body = JSON.parse(String((init as RequestInit).body))
     const userMessage = body.messages.find((message: { role: string }) => message.role === 'user')
     expect(userMessage.content).toBe('只有文字')
+  })
+
+  it('streams a multimodal workflow prompt through Chat Completions with one POST', async () => {
+    const streamBody = [
+      'data: {"id":"chatcmpl_workflow","choices":[{"delta":{"content":"干净"}}]}',
+      '',
+      'data: {"choices":[{"delta":{"content":"重绘提示词"}}]}',
+      '',
+      'data: [DONE]',
+      '',
+    ].join('\n')
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(streamBody, {
+      status: 200,
+      headers: { 'Content-Type': 'text/event-stream' },
+    }))
+    const profile = createDefaultOpenAIProfile({
+      apiKey: 'test-key',
+      apiMode: 'chat',
+      model: 'gemini-3.1-flash-lite',
+      baseUrl: 'https://grsai.dakka.com.cn/v1',
+    })
+
+    await expect(callWorkflowPromptApi({
+      settings: DEFAULT_SETTINGS,
+      profile,
+      systemPrompt: '分析参考图并生成去脏重绘提示词',
+      userText: '保持主体结构',
+      imageDataUrls: ['data:image/png;base64,aGk='],
+    })).resolves.toBe('干净重绘提示词')
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://grsai.dakka.com.cn/v1/chat/completions')
+    const [, init] = fetchMock.mock.calls[0]
+    const body = JSON.parse(String((init as RequestInit).body))
+    expect(body.stream).toBe(true)
+    expect(body.messages).toEqual([
+      { role: 'system', content: '分析参考图并生成去脏重绘提示词' },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: '保持主体结构' },
+          { type: 'image_url', image_url: { url: 'data:image/png;base64,aGk=' } },
+        ],
+      },
+    ])
+  })
+
+  it('still accepts a non-streaming workflow response from compatible chat providers', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+      choices: [{ message: { role: 'assistant', content: '普通响应提示词' } }],
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+    const profile = createDefaultOpenAIProfile({
+      apiKey: 'test-key',
+      apiMode: 'chat',
+      model: 'vision-model',
+      baseUrl: 'https://api.example.com/v1',
+    })
+
+    await expect(callWorkflowPromptApi({
+      settings: DEFAULT_SETTINGS,
+      profile,
+      systemPrompt: 'system',
+      userText: 'user',
+    })).resolves.toBe('普通响应提示词')
   })
 
   it('generates a conversation title through Chat Completions', async () => {
