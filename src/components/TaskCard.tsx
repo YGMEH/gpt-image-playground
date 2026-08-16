@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef, type ReactNode } from 'react'
 import type { TaskRecord } from '../types'
-import { useStore, retryTask } from '../store'
+import { useStore, retryTask, stopTaskWaiting } from '../store'
 import { ensureImageThumbnailCached, subscribeImageThumbnail } from '../lib/imageCache'
 import { formatImageRatio } from '../lib/size'
 import { getParamDisplay, ActualValueBadge } from '../lib/paramDisplay'
 import { DEFAULT_IMAGES_MODEL, DEFAULT_FAL_MODEL } from '../lib/apiProfiles'
 import { isAgentTaskPromptPending } from '../lib/taskPromptDisplay'
+import { GRSAI_CONSUMPTION_LOG_URL, shouldShowGrsaiTaskLink } from '../lib/grsaiTask'
 import { CodeIcon, TransparentBgIcon } from './icons'
 import ViewportTooltip from './ViewportTooltip'
 
@@ -298,6 +299,7 @@ export default function TaskCard({
   const isFalReconnecting = task.status === 'error' && task.falRecoverable
   const isCustomReconnecting = task.status === 'error' && task.customRecoverable
   const showRunningTimer = task.status === 'running' || isFalReconnecting || isCustomReconnecting
+  const showGrsaiTaskLink = shouldShowGrsaiTaskLink(task, settings)
   const swipeBgClass = showSwipeAction
     ? swipeStartedSelected
       ? 'bg-gray-500 dark:bg-gray-600'
@@ -638,6 +640,31 @@ export default function TaskCard({
               onTouchEnd={(e) => e.stopPropagation()}
               onTouchCancel={(e) => e.stopPropagation()}
             >
+              {showRunningTimer && (
+                <TaskActionButton
+                  tooltip="停止本地等待（远端任务可能仍在继续并计费）"
+                  onClick={() => void stopTaskWaiting(task)}
+                  className="p-1.5 rounded-md hover:bg-amber-50 dark:hover:bg-amber-950/30 text-gray-400 hover:text-amber-500 transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="7" y="7" width="10" height="10" rx="1" strokeWidth={2} />
+                  </svg>
+                </TaskActionButton>
+              )}
+              {showGrsaiTaskLink && (
+                <a
+                  href={GRSAI_CONSUMPTION_LOG_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="前往 Grsai 任务记录"
+                  title="前往 Grsai 任务记录，查找远端可能已经生成的图片"
+                  className="inline-flex p-1.5 rounded-md hover:bg-violet-50 dark:hover:bg-violet-950/30 text-gray-400 hover:text-violet-500 transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5h6m0 0v6m0-6L10 14M8 7H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-3" />
+                  </svg>
+                </a>
+              )}
               {((task.status === 'error' && !isFalReconnecting) || settings.alwaysShowRetryButton) && (
                 <TaskActionButton
                   tooltip="重试任务"

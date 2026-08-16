@@ -13,7 +13,7 @@ interface ProfileImportUrlModalProps {
   profile: ApiProfile
   options: CopyImportUrlOptions
   onOptionsChange: (patch: Partial<CopyImportUrlOptions>) => void
-  onCopy: (includeApiKey: boolean) => void
+  onCopy: () => void
   onClose: () => void
 }
 
@@ -49,7 +49,7 @@ export default function ProfileImportUrlModal({
           <span>复制导入配置「{profile.name}」的 URL</span>
         </h3>
         <div className="text-[13px] text-gray-500 dark:text-gray-400 mb-5 leading-relaxed">
-          是否包含 API Key？如果选择「不包含」，可额外配置是否使用 New API 变量。
+          导入链接不会包含 API Key，避免密钥进入浏览器历史、分享记录或日志。打开链接后请在本机设置中填写密钥。
         </div>
 
         <div className="mb-6 rounded-2xl bg-gray-50/80 p-4 dark:bg-white/[0.03] ring-1 ring-black/5 dark:ring-white/5">
@@ -73,20 +73,12 @@ export default function ProfileImportUrlModal({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => onCopy(false)}
-            className="flex-1 py-2 rounded-xl border border-gray-200 dark:border-white/[0.08] text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition"
-          >
-            不包含
-          </button>
-          <button
-            onClick={() => onCopy(true)}
-            className="flex-1 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition shadow-sm shadow-blue-500/20"
-          >
-            包含 API Key
-          </button>
-        </div>
+        <button
+          onClick={onCopy}
+          className="w-full py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition shadow-sm shadow-blue-500/20"
+        >
+          复制安全导入 URL
+        </button>
       </div>
     </div>,
     document.body,

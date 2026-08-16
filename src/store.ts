@@ -80,6 +80,7 @@ const SUPPORT_PROMPT_IMAGE_THRESHOLD = 50
 const falRecoveryTimers = new Map<string, ReturnType<typeof setTimeout>>()
 const customRecoveryTimers = new Map<string, ReturnType<typeof setTimeout>>()
 const openAIWatchdogTimers = new Map<string, ReturnType<typeof setTimeout>>()
+const taskRequestControllers = new Map<string, AbortController>()
 const agentRoundControllers = new Map<string, AbortController>()
 const agentRecoveryContinuations = new Set<string>()
 const deletedActiveAgentTasks = new Map<string, { task: TaskRecord; controller: AbortController }>()
@@ -475,6 +476,18 @@ export async function deleteImageIfUnreferenced(imageId: string) {
   } catch {
     // 清理是内存/存储优化，失败不影响替换结果。
   }
+}
+
+/** 扫描并删除当前任务、草稿和 Agent 对话均未引用的图片与缩略图。 */
+export async function cleanupOrphanedStoredImages() {
+  const beforeIds = await getAllImageIds()
+  for (const imageId of beforeIds) {
+    if (!isImageReferencedByState(useStore.getState(), imageId)) {
+      await deleteStoredImageIfUnreferenced(imageId)
+    }
+  }
+  const remainingIds = new Set(await getAllImageIds())
+  return beforeIds.reduce((count, imageId) => count + (remainingIds.has(imageId) ? 0 : 1), 0)
 }
 
 async function deleteStoredImageIfUnreferenced(imageId: string) {
@@ -1815,6 +1828,7 @@ export async function submitTask(options: { allowFullMask?: boolean; useCurrentA
     apiProfileName: activeProfile.name,
     apiMode: activeProfile.apiMode,
     apiModel: activeProfile.model,
+    apiBaseUrl: activeProfile.baseUrl,
     inputImageIds: orderedInputImages.map((i) => i.id),
     maskTargetImageId,
     maskImageId,
@@ -3586,9 +3600,14 @@ async function executeAgentRound(
 }
 
 async function executeTask(taskId: string) {
+  const controller = new AbortController()
+  taskRequestControllers.set(taskId, controller)
   const { settings } = useStore.getState()
   const task = useStore.getState().tasks.find((t) => t.id === taskId)
-  if (!task) return
+  if (!task) {
+    taskRequestControllers.delete(taskId)
+    return
+  }
   const taskProfile = getTaskApiProfile(settings, task)
   if (!taskProfile && task.apiProfileId) {
     updateTaskInStore(taskId, {
@@ -3641,6 +3660,7 @@ async function executeTask(taskId: string) {
       inputImageDataUrls: inputDataUrls,
       maskDataUrl,
       skipCodexCliSizePrompt: task.sourceMode === 'agent',
+      signal: controller.signal,
       onFalRequestEnqueued: (request) => {
         falRequestInfo = request
         updateTaskInStore(taskId, {
@@ -3784,6 +3804,7 @@ async function executeTask(taskId: string) {
       useStore.getState().setDetailTaskId(taskId)
     }
   } finally {
+    if (taskRequestControllers.get(taskId) === controller) taskRequestControllers.delete(taskId)
     // 释放输入图片的内存缓存（已持久化到 IndexedDB，后续按需从 DB 加载）
     for (const imgId of task.inputImageIds) {
       deleteCachedImage(imgId)
@@ -3891,6 +3912,26 @@ export async function deleteFavoriteCollection(collectionId: string, deleteTasks
   useStore.getState().showToast(`已删除收藏夹「${collection.name}」`, 'success')
 }
 
+/** 停止本地等待和轮询；已提交到服务商的生成可能继续执行并产生费用。 */
+export async function stopTaskWaiting(task: TaskRecord) {
+  const latest = useStore.getState().tasks.find((item) => item.id === task.id)
+  if (!latest || (latest.status !== 'running' && !latest.falRecoverable && !latest.customRecoverable)) return
+  taskRequestControllers.get(task.id)?.abort()
+  taskRequestControllers.delete(task.id)
+  clearOpenAIWatchdogTimer(task.id)
+  clearFalRecoveryTimer(task.id)
+  clearCustomRecoveryTimer(task.id)
+  useStore.getState().setTaskStreamPreview(task.id)
+  const now = Date.now()
+  await updateTaskInStore(task.id, {
+    ...createTaskErrorPatch(latest, '已停止本地等待。远端生成可能仍在继续，并可能已经计费。', now),
+    falRecoverable: false,
+    customRecoverable: false,
+    elapsed: Math.max(0, now - latest.createdAt),
+  })
+  useStore.getState().showToast('已停止本地等待；远端任务可能仍在继续', 'info')
+}
+
 /** 重试失败的任务：创建新任务并执行 */
 export async function retryTask(task: TaskRecord) {
   const { settings } = useStore.getState()
@@ -3913,6 +3954,7 @@ export async function retryTask(task: TaskRecord) {
     apiProfileName: activeProfile.name,
     apiMode: activeProfile.apiMode,
     apiModel: activeProfile.model,
+    apiBaseUrl: activeProfile.baseUrl,
     inputImageIds: [...task.inputImageIds],
     maskTargetImageId: task.maskTargetImageId ?? null,
     maskImageId: task.maskImageId ?? null,

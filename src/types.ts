@@ -182,6 +182,8 @@ export interface TaskRecord {
   apiMode?: ApiMode
   /** 生成时使用的模型 ID */
   apiModel?: string
+  /** 生成时使用的 API 地址（不含密钥），用于任务溯源和服务商专属恢复入口 */
+  apiBaseUrl?: string
   /** fal.ai 队列请求 ID，用于连接断开后的结果恢复 */
   falRequestId?: string
   /** fal.ai 队列 endpoint，用于连接断开后的状态和结果查询 */

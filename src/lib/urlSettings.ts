@@ -12,14 +12,30 @@ import {
   normalizeReasoningEffort,
   normalizeStreamPartialImages,
 } from './apiProfiles'
-
 const URL_SETTING_KEYS = ['settings', 'apiUrl', 'apiKey', 'codexCli', 'apiMode', 'model', 'profileName', 'reasoningEffort', 'streamImages', 'streamPartialImages']
+
+/** API Key 永不从 URL 导入：URL 会进入浏览器历史、分享记录和日志。 */
+function removeUrlProfileApiKeys(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value
+  const record = value as Record<string, unknown>
+  return {
+    ...record,
+    profiles: Array.isArray(record.profiles)
+      ? record.profiles.map((profile) => {
+          if (!profile || typeof profile !== 'object' || Array.isArray(profile)) return profile
+          const { apiKey: _apiKey, ...safeProfile } = profile as Record<string, unknown>
+          return safeProfile
+        })
+      : record.profiles,
+  }
+}
+
 
 function getProfileDedupKey(profile: Pick<AppSettings['profiles'][number], 'provider' | 'baseUrl' | 'apiKey' | 'model' | 'apiMode' | 'reasoningEffort' | 'codexCli' | 'streamImages' | 'streamPartialImages'>) {
   return JSON.stringify([
     profile.provider,
     profile.baseUrl.trim().replace(/\/+$/, '').toLowerCase(),
-    profile.apiKey.trim(),
+    // URL 导入不使用密钥做去重，避免密钥进入浏览器历史或分享链接。
     profile.model.trim(),
     profile.apiMode,
     profile.reasoningEffort,
@@ -53,9 +69,9 @@ function getUrlSettingsPayload(searchParams: URLSearchParams): unknown | null {
   try {
     const parsed = JSON.parse(raw)
     if (parsed && typeof parsed === 'object' && 'settings' in parsed) {
-      return pickUrlSettingsPayload((parsed as { settings?: unknown }).settings ?? null)
+      return removeUrlProfileApiKeys(pickUrlSettingsPayload((parsed as { settings?: unknown }).settings ?? null))
     }
-    return pickUrlSettingsPayload(parsed)
+    return removeUrlProfileApiKeys(pickUrlSettingsPayload(parsed))
   } catch {
     return null
   }
@@ -104,7 +120,6 @@ function buildDefaultConfigOnlySettingsFromUrlParams(currentSettings: Partial<Ap
       if (matched) {
         if (typeof matched.name === 'string' && matched.name.trim()) patch.name = matched.name.trim()
         if (typeof matched.baseUrl === 'string') patch.baseUrl = matched.baseUrl
-        if (typeof matched.apiKey === 'string') patch.apiKey = matched.apiKey
         if (typeof matched.model === 'string' && matched.model.trim()) patch.model = matched.model.trim()
         if (typeof matched.timeout === 'number' && Number.isFinite(matched.timeout)) patch.timeout = matched.timeout
         if (typeof matched.apiProxy === 'boolean') patch.apiProxy = matched.apiProxy
@@ -122,12 +137,10 @@ function buildDefaultConfigOnlySettingsFromUrlParams(currentSettings: Partial<Ap
 
   // 查询参数覆盖（优先级高于 settings JSON）
   const apiUrlParam = searchParams.get('apiUrl')
-  const apiKeyParam = searchParams.get('apiKey')
   const modelParam = searchParams.get('model')
   const profileNameParam = searchParams.get('profileName')
   if (profileNameParam?.trim()) patch.name = profileNameParam.trim()
   if (apiUrlParam !== null) patch.baseUrl = normalizeBaseUrl(apiUrlParam.trim())
-  if (apiKeyParam !== null) patch.apiKey = apiKeyParam.trim()
   if (modelParam !== null && modelParam.trim()) patch.model = modelParam.trim()
   if (isOpenAI) {
     const apiModeParam = searchParams.get('apiMode')
@@ -165,7 +178,6 @@ export function buildSettingsFromUrlParams(currentSettings: Partial<AppSettings>
 
   const importedSettings = getUrlSettingsPayload(searchParams)
   const apiUrlParam = searchParams.get('apiUrl')
-  const apiKeyParam = searchParams.get('apiKey')
   const codexCliParam = searchParams.get('codexCli')
   const apiModeParam = searchParams.get('apiMode')
   const modelParam = searchParams.get('model')
@@ -176,7 +188,7 @@ export function buildSettingsFromUrlParams(currentSettings: Partial<AppSettings>
   const streamPartialImagesParam = searchParams.get('streamPartialImages')
   const apiMode: ApiMode | undefined = apiModeParam === 'images' || apiModeParam === 'responses' || apiModeParam === 'chat' ? apiModeParam : undefined
 
-  const hasLegacyOpenAIParams = apiUrlParam !== null || apiKeyParam !== null || codexCliParam !== null || apiMode !== undefined || modelParam !== null || profileNameParam !== null || reasoningEffortParam !== null || streamImagesParam !== null || streamPartialImagesParam !== null
+  const hasLegacyOpenAIParams = apiUrlParam !== null || codexCliParam !== null || apiMode !== undefined || modelParam !== null || profileNameParam !== null || reasoningEffortParam !== null || streamImagesParam !== null || streamPartialImagesParam !== null
   const settings = importedSettings == null
     ? normalizeSettings(currentSettings)
     : activateFirstImportedProfile(mergeImportedSettings(currentSettings, importedSettings), importedSettings)
@@ -190,7 +202,6 @@ export function buildSettingsFromUrlParams(currentSettings: Partial<AppSettings>
       model: profileApiMode === 'responses' ? DEFAULT_RESPONSES_MODEL : profileApiMode === 'chat' ? DEFAULT_CHAT_MODEL : DEFAULT_IMAGES_MODEL,
     })
     if (apiUrlParam !== null) profile.baseUrl = normalizeBaseUrl(apiUrlParam.trim())
-    if (apiKeyParam !== null) profile.apiKey = apiKeyParam.trim()
     if (modelParam !== null && modelParam.trim()) profile.model = modelParam.trim()
     if (reasoningEffortParam !== null) profile.reasoningEffort = normalizeReasoningEffort(reasoningEffortParam)
     if (profileName) profile.name = profileName

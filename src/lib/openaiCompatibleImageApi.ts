@@ -511,6 +511,13 @@ async function callImagesApiConcurrent(opts: CallApiOptions, profile: ApiProfile
   }
 }
 
+function createLinkedAbortController(signal?: AbortSignal) {
+  const controller = new AbortController()
+  if (signal?.aborted) controller.abort(signal.reason)
+  else signal?.addEventListener('abort', () => controller.abort(signal.reason), { once: true })
+  return controller
+}
+
 async function callImagesApiSingle(opts: CallApiOptions, profile: ApiProfile): Promise<CallApiResult> {
   const { prompt: originalPrompt, params, inputImageDataUrls } = opts
   const sizePrompt = profile.codexCli && !opts.skipCodexCliSizePrompt
@@ -526,7 +533,7 @@ async function callImagesApiSingle(opts: CallApiOptions, profile: ApiProfile): P
   const requestHeaders = createRequestHeaders(profile)
   const paths = createOpenAICompatiblePaths()
 
-  const controller = new AbortController()
+  const controller = createLinkedAbortController(opts.signal)
   const timeoutId = setTimeout(() => controller.abort(), profile.timeout * 1000)
 
   try {
@@ -927,7 +934,7 @@ async function callCustomHttpImageApi(opts: CallApiOptions, profile: ApiProfile,
   const { params, inputImageDataUrls } = opts
   const isEdit = inputImageDataUrls.length > 0
   const mime = MIME_MAP[params.output_format] || 'image/png'
-  const controller = new AbortController()
+  const controller = createLinkedAbortController(opts.signal)
   let timeoutId: ReturnType<typeof setTimeout> | null = setTimeout(() => controller.abort(), profile.timeout * 1000)
 
   try {
@@ -1027,7 +1034,7 @@ async function callResponsesImageApiSingle(opts: CallApiOptions, profile: ApiPro
   const proxyConfig = readClientDevProxyConfig()
   const useApiProxy = shouldUseApiProxy(profile.apiProxy, proxyConfig)
   const requestHeaders = createRequestHeaders(profile)
-  const controller = new AbortController()
+  const controller = createLinkedAbortController(opts.signal)
   const timeoutId = setTimeout(() => controller.abort(), profile.timeout * 1000)
 
   try {

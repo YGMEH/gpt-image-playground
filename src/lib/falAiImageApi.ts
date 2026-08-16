@@ -212,6 +212,7 @@ export async function callFalAiImageApi(opts: CallApiOptions, profile: ApiProfil
     const result = await fal.subscribe(endpoint, {
       input,
       logs: true,
+      abortSignal: opts.signal,
       onEnqueue: (requestId) => {
         opts.onFalRequestEnqueued?.({ requestId, endpoint })
       },

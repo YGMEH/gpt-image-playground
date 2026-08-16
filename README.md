@@ -387,12 +387,11 @@ npm run build
 <a id="url-quick-fill"></a>
 ## 🛠️ URL 传参快速填充
 
-应用支持通过 URL 查询参数快速填入配置，非常适合创建书签或集成分享。根据你的服务商类型，选择对应的方式：
+应用支持通过 URL 查询参数快速填入**非敏感配置**，适合创建书签或集成分享。为避免密钥进入浏览器历史、服务器日志或分享记录，URL 中的 `apiKey` 字段会被忽略；导入后请仅在本机设置页填写 API Key。
 
 **方式一：标准 OpenAI 兼容服务商**
 直接使用简短的查询参数配置：
 - `?apiUrl=https://你的代理地址.com`
-- `?apiKey=sk-xxxx`
 - `?apiMode=images` 或 `?apiMode=responses`（未传时默认为 `images`）
 - `?model=gpt-image-2`（未传时按 `apiMode` 使用默认模型）
 - `?profileName=我的配置`（设置配置名称，未传时默认为 `URL 参数配置`）
@@ -404,11 +403,11 @@ npm run build
 例如，集成到 New API 的聊天系统：
 
 ```text
-https://gpt-image-playground.cooksleep.dev?apiUrl={address}&apiKey={key}&model={model}
+https://gpt-image-playground.cooksleep.dev?apiUrl={address}&model={model}
 ```
 
 ```text
-https://cooksleep.github.io/gpt_image_playground?apiUrl={address}&apiKey={key}&model={model}
+https://cooksleep.github.io/gpt_image_playground?apiUrl={address}&model={model}
 ```
 
 <a id="custom-provider-config"></a>

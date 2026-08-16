@@ -34,7 +34,7 @@ describe('URL settings params', () => {
       name: 'URL 参数配置',
       provider: 'openai',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'test-key',
+      apiKey: '',
       model: DEFAULT_IMAGES_MODEL,
     })
   })
@@ -49,7 +49,7 @@ describe('URL settings params', () => {
     expect(next.profiles.find((profile) => profile.id === next.activeProfileId)).toMatchObject({
       provider: 'openai',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'test-key',
+      apiKey: '',
       model: 'custom-image-model',
       apiMode: 'images',
     })
@@ -92,7 +92,7 @@ describe('URL settings params', () => {
       name: '测试配置',
       provider: 'openai',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'test-key',
+      apiKey: '',
     })
   })
 
@@ -141,7 +141,7 @@ describe('URL settings params', () => {
       name: 'URL Profile',
       provider: 'openai',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'test-key',
+      apiKey: '',
     })
   })
 
@@ -169,7 +169,7 @@ describe('URL settings params', () => {
     expect(activeProfile).toMatchObject({
       provider: 'openai',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'test-key',
+      apiKey: '',
       codexCli: true,
     })
   })
@@ -199,7 +199,7 @@ describe('URL settings params', () => {
     expect(activeProfile).toMatchObject({
       provider: 'openai',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'test-key',
+      apiKey: '',
       streamImages: true,
       streamPartialImages: 3,
     })
@@ -221,7 +221,7 @@ describe('URL settings params', () => {
     expect(next.profiles.find((profile) => profile.id === next.activeProfileId)).toMatchObject({
       provider: 'openai',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'openai-key',
+      apiKey: '',
     })
   })
 
@@ -274,7 +274,7 @@ describe('URL settings params', () => {
     expect(next.profiles[0]).toMatchObject({
       id: 'custom-profile',
       provider: 'custom-json',
-      apiKey: 'custom-key',
+      apiKey: '',
       model: 'custom-model',
     })
   })
@@ -329,7 +329,7 @@ describe('URL settings params', () => {
     expect(activeProfile).toMatchObject({
       provider: 'custom-json',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'custom-key',
+      apiKey: '',
       model: 'custom-model',
     })
   })
@@ -377,7 +377,7 @@ describe('URL settings params', () => {
       id: 'wrapped-profile',
       provider: 'wrapped-custom',
       baseUrl: 'https://wrapped.example.com/v1',
-      apiKey: 'wrapped-key',
+      apiKey: '',
       model: 'wrapped-model',
     })
   })
@@ -398,7 +398,7 @@ describe('URL settings params', () => {
       provider: 'openai',
       name: '导入配置',
       baseUrl: 'https://api.example.com/v1',
-      apiKey: 'test-key',
+      apiKey: '',
       model: 'custom-model',
       apiMode: 'responses',
     })
@@ -506,7 +506,7 @@ describe('URL settings params', () => {
       provider: 'openai',
       name: 'OpenAI Profile',
       baseUrl: 'https://openai.example.com/v1',
-      apiKey: 'openai-key',
+      apiKey: '',
       model: 'openai-model',
       timeout: 120,
       apiMode: 'responses',
@@ -587,7 +587,7 @@ describe('URL settings params', () => {
       provider: customProvider.id,
       name: 'Patched Custom Default',
       baseUrl: 'https://patched-custom.example.com/v1',
-      apiKey: 'patched-custom-key',
+      apiKey: 'custom-default-key',
       model: 'patched-custom-model',
       timeout: 240,
       apiMode: 'images',

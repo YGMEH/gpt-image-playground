@@ -19,6 +19,8 @@ export interface CallApiOptions {
   inputImageDataUrls: string[]
   maskDataUrl?: string
   skipCodexCliSizePrompt?: boolean
+  /** 仅取消本地请求等待；已提交的远端生成可能继续执行并计费。 */
+  signal?: AbortSignal
   onFalRequestEnqueued?: (request: { requestId: string; endpoint: string }) => void
   onCustomTaskEnqueued?: (task: { taskId: string }) => void | Promise<void>
   onPartialImage?: (partial: { image: string; partialImageIndex?: number; requestIndex?: number }) => void

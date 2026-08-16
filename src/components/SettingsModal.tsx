@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom'
 import { normalizeBaseUrl } from '../lib/api'
 import { hasActiveDataOperations } from '../lib/dataOperations'
 import { isApiProxyAvailable, isApiProxyLocked, readClientDevProxyConfig } from '../lib/devProxy'
-import { useStore, exportData, importData, clearData, type SettingsTab } from '../store'
+import { useStore, exportData, importData, clearData, cleanupOrphanedStoredImages, type SettingsTab } from '../store'
+import { formatStorageBytes, getBrowserStorageEstimate, type BrowserStorageEstimate } from '../lib/storageEstimate'
 import {
   createDefaultOpenAIProfile,
   DEFAULT_FAL_BASE_URL,
@@ -62,7 +63,7 @@ const DEFAULT_COPY_IMPORT_URL_OPTIONS = {
   useNewApiModel: false,
 }
 
-type ProfileImportUrlOptions = CopyImportUrlOptions & { includeApiKey: boolean }
+type ProfileImportUrlOptions = CopyImportUrlOptions
 
 function readCopyImportUrlOptions(): CopyImportUrlOptions {
   if (typeof window === 'undefined') return DEFAULT_COPY_IMPORT_URL_OPTIONS
@@ -183,6 +184,9 @@ export default function SettingsModal() {
   const [isExportingData, setIsExportingData] = useState(false)
   const [isImportingData, setIsImportingData] = useState(false)
   const [isImportingJson, setIsImportingJson] = useState(false)
+  const [storageEstimate, setStorageEstimate] = useState<BrowserStorageEstimate | null>(null)
+  const [storageEstimateError, setStorageEstimateError] = useState(false)
+  const [isCleaningOrphans, setIsCleaningOrphans] = useState(false)
   const [draggedProfileId, setDraggedProfileId] = useState<string | null>(null)
   const [dragOverProfileId, setDragOverProfileId] = useState<string | null>(null)
   const [dragDropPosition, setDragDropPosition] = useState<'before' | 'after' | null>(null)
@@ -453,15 +457,11 @@ export default function SettingsModal() {
 
     if (profile.provider === 'openai') {
       const baseUrl = profile.baseUrl.trim() || DEFAULT_SETTINGS.baseUrl
-      url.searchParams.set('apiUrl', options.useNewApiAddress && !options.includeApiKey ? '{address}' : normalizeBaseUrl(baseUrl))
-      if (options.includeApiKey && profile.apiKey.trim()) {
-        url.searchParams.set('apiKey', profile.apiKey.trim())
-      } else if (!options.includeApiKey && options.useNewApiKey) {
-        url.searchParams.set('apiKey', '{key}')
-      }
+      url.searchParams.set('apiUrl', options.useNewApiAddress ? '{address}' : normalizeBaseUrl(baseUrl))
+      if (options.useNewApiKey) url.searchParams.set('apiKey', '{key}')
       url.searchParams.set('apiMode', profile.apiMode)
       const model = profile.model.trim() || getDefaultModelForMode(profile.apiMode)
-      url.searchParams.set('model', !options.includeApiKey && options.useNewApiModel ? '{model}' : model)
+      url.searchParams.set('model', options.useNewApiModel ? '{model}' : model)
       if (profile.name.trim()) url.searchParams.set('profileName', profile.name.trim())
       if (profile.reasoningEffort) url.searchParams.set('reasoningEffort', profile.reasoningEffort)
       if (profile.codexCli) url.searchParams.set('codexCli', 'true')
@@ -469,42 +469,36 @@ export default function SettingsModal() {
       if (profile.streamPartialImages !== DEFAULT_STREAM_PARTIAL_IMAGES) url.searchParams.set('streamPartialImages', String(normalizeStreamPartialImages(profile.streamPartialImages)))
 
       let result = url.toString()
-      if (!options.includeApiKey) {
-        if (options.useNewApiAddress) result = result.replace('%7Baddress%7D', '{address}')
-        if (options.useNewApiKey) result = result.replace('%7Bkey%7D', '{key}')
-        if (options.useNewApiModel) result = result.replace('%7Bmodel%7D', '{model}')
-      }
+      if (options.useNewApiAddress) result = result.replace('%7Baddress%7D', '{address}')
+      if (options.useNewApiKey) result = result.replace('%7Bkey%7D', '{key}')
+      if (options.useNewApiModel) result = result.replace('%7Bmodel%7D', '{model}')
       return result
     }
 
     const provider = draft.customProviders.find((item) => item.id === profile.provider)
     const importProfile: ApiProfile = {
       ...profile,
-      apiKey: options.includeApiKey ? profile.apiKey : '',
+      apiKey: '',
     }
-    if (!options.includeApiKey) {
-      if (options.useNewApiAddress) importProfile.baseUrl = '{address}'
-      if (options.useNewApiKey) importProfile.apiKey = '{key}'
-      if (options.useNewApiModel) importProfile.model = '{model}'
-    }
+    if (options.useNewApiAddress) importProfile.baseUrl = '{address}'
+    if (options.useNewApiKey) importProfile.apiKey = '{key}'
+    if (options.useNewApiModel) importProfile.model = '{model}'
     url.searchParams.set('settings', JSON.stringify({
       customProviders: provider ? [provider] : [],
       profiles: [importProfile],
     }))
 
     let result = url.toString()
-    if (!options.includeApiKey) {
-      if (options.useNewApiAddress) result = result.replace(/%7Baddress%7D/g, '{address}')
-      if (options.useNewApiKey) result = result.replace(/%7Bkey%7D/g, '{key}')
-      if (options.useNewApiModel) result = result.replace(/%7Bmodel%7D/g, '{model}')
-    }
+    if (options.useNewApiAddress) result = result.replace(/%7Baddress%7D/g, '{address}')
+    if (options.useNewApiKey) result = result.replace(/%7Bkey%7D/g, '{key}')
+    if (options.useNewApiModel) result = result.replace(/%7Bmodel%7D/g, '{model}')
     return result
   }
 
   const copyProfileImportUrl = async (profile: ApiProfile, options: ProfileImportUrlOptions) => {
     try {
       await copyTextToClipboard(createProfileImportUrl(profile, options))
-      showToast(options.includeApiKey ? '导入 URL 已复制（包含 API Key）' : '导入 URL 已复制', 'success')
+      showToast('安全导入 URL 已复制（不含 API Key）', 'success')
       setCopyImportUrlProfile(null)
     } catch (err) {
       showToast(getClipboardFailureMessage('复制导入 URL 失败', err), 'error')
@@ -674,7 +668,29 @@ export default function SettingsModal() {
     e.preventDefault()
     e.stopPropagation()
   }
-
+  const refreshStorageEstimate = useCallback(async () => {
+    try {
+      setStorageEstimate(await getBrowserStorageEstimate())
+      setStorageEstimateError(false)
+    } catch {
+      setStorageEstimateError(true)
+    }
+  }, [])
+  useEffect(() => {
+    if (showSettings && activeTab === 'data') void refreshStorageEstimate()
+  }, [showSettings, activeTab, refreshStorageEstimate])
+  const handleCleanupOrphanedImages = async () => {
+    setIsCleaningOrphans(true)
+    try {
+      const deletedCount = await cleanupOrphanedStoredImages()
+      showToast(deletedCount > 0 ? `已清理 ${deletedCount} 个未引用图片` : '未发现可清理的未引用图片', 'success')
+      await refreshStorageEstimate()
+    } catch (error) {
+      showToast(error instanceof Error ? `清理失败：${error.message}` : '清理失败', 'error')
+    } finally {
+      setIsCleaningOrphans(false)
+    }
+  }
   useCloseOnEscape(showSettings && !dataTransferMode, handleClose)
   usePreventBackgroundScroll(showSettings, showZipDownloadRouteManager ? zipDownloadRouteScrollBoundaryRef : showCustomProviderImport ? customProviderScrollBoundaryRef : settingsScrollBoundaryRef)
 
@@ -1548,7 +1564,7 @@ export default function SettingsModal() {
                   </button>
                 </div>
                 <div data-selectable-text className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
-                  支持通过查询参数覆盖：<code className="bg-gray-100 dark:bg-white/[0.06] px-1 py-0.5 rounded">?apiKey=</code>
+                  为保护密钥，URL 中的 <code className="bg-gray-100 dark:bg-white/[0.06] px-1 py-0.5 rounded">apiKey</code> 会被忽略；请仅在本机填写 API Key。
                 </div>
               </div>
 
@@ -1773,6 +1789,46 @@ export default function SettingsModal() {
                   <div className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400">
                     所有的配置、任务和生成的图片均仅保存在您的浏览器本地（除非您使用的服务商存储了它们）。如果您需要清理浏览器站点数据、重置浏览器或使用其他设备，请先导出备份。
                   </div>
+</div>
+
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-3 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100">浏览器存储占用</h4>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {storageEstimateError
+                          ? '读取存储信息失败'
+                          : !storageEstimate
+                            ? '正在读取…'
+                            : storageEstimate.supported
+                              ? `已用 ${formatStorageBytes(storageEstimate.usage)} / 可用配额 ${formatStorageBytes(storageEstimate.quota)}`
+                              : '当前浏览器不支持存储容量估算'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void refreshStorageEstimate()}
+                      className="rounded-lg px-2.5 py-1.5 text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                    >
+                      刷新
+                    </button>
+                  </div>
+                  {storageEstimate?.supported && (
+                    <div className="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-white/[0.06]" aria-label={`存储使用率 ${Math.round(storageEstimate.usageRatio * 100)}%`}>
+                      <div className="h-full rounded-full bg-blue-500 transition-[width]" style={{ width: `${Math.max(storageEstimate.usageRatio * 100, storageEstimate.usage > 0 ? 1 : 0)}%` }} />
+                    </div>
+                  )}
+                  <div className="rounded-xl bg-amber-50/70 p-3 text-xs leading-relaxed text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+                    清理仅删除任务、草稿和 Agent 对话均未引用的孤儿图片，不会删除仍在使用的生成结果。重要数据建议先导出备份。
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleCleanupOrphanedImages()}
+                    disabled={isCleaningOrphans || hasRunningOperations}
+                    className="w-full rounded-xl bg-gray-100/80 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-50 dark:bg-white/[0.06] dark:text-gray-300 dark:hover:bg-white/[0.1]"
+                  >
+                    {isCleaningOrphans ? '正在扫描并清理…' : hasRunningOperations ? '任务运行时不可清理' : '扫描并清理未引用图片'}
+                  </button>
                 </div>
 
                 <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-4 shadow-sm">
@@ -2024,7 +2080,7 @@ export default function SettingsModal() {
             profile={copyImportUrlProfile}
             options={copyImportUrlOptions}
             onOptionsChange={updateCopyImportUrlOptions}
-            onCopy={(includeApiKey) => copyProfileImportUrl(copyImportUrlProfile, { ...copyImportUrlOptions, includeApiKey })}
+            onCopy={() => copyProfileImportUrl(copyImportUrlProfile, copyImportUrlOptions)}
             onClose={() => setCopyImportUrlProfile(null)}
           />
         )}
