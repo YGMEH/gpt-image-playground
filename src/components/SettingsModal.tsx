@@ -237,7 +237,8 @@ export default function SettingsModal() {
   const selectedAgentImageProfile = draft.profiles.find((profile) => profile.id === draft.agentImageProfileId)
     ?? activeProfile
   const agentTextProfileOptions = agentTextProfiles.map((profile) => ({
-    label: `${profile.name} · ${profile.model || DEFAULT_RESPONSES_MODEL}`,
+    // 配置选择器只展示用户填写的配置名称；模型 ID 已在独立字段中展示和编辑。
+    label: profile.name,
     value: profile.id,
   }))
   const agentImageProfileOptions = draft.profiles.map((profile) => ({
