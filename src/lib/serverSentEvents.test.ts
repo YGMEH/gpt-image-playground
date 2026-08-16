@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isEventStreamResponse, parseServerSentEventBlock, readJsonServerSentEvents } from './serverSentEvents'
+import { isEventStreamResponse, isJsonServerSentEventResponse, parseServerSentEventBlock, readJsonOrServerSentEventResponse, readJsonServerSentEvents } from './serverSentEvents'
 
 describe('serverSentEvents', () => {
   it('detects event-stream content types', () => {
@@ -9,6 +9,21 @@ describe('serverSentEvents', () => {
     expect(isEventStreamResponse(new Response('', {
       headers: { 'Content-Type': 'application/json' },
     }))).toBe(false)
+  })
+
+  it('detects SSE bodies even when a proxy mislabels them as JSON', async () => {
+    const response = new Response('data: {"id":"task-1"}\n\n', {
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    expect(await isJsonServerSentEventResponse(response)).toBe(true)
+    expect(await readJsonOrServerSentEventResponse(response)).toEqual({ id: 'task-1' })
+  })
+
+  it('returns the last JSON event and preserves ordinary JSON parsing', async () => {
+    const sseResponse = new Response('data: {"status":"running"}\n\ndata: {"status":"succeeded","id":"task-1"}\n\n')
+    expect(await readJsonOrServerSentEventResponse(sseResponse)).toEqual({ status: 'succeeded', id: 'task-1' })
+    expect(await readJsonOrServerSentEventResponse(new Response('{"ok":true}'))).toEqual({ ok: true })
   })
 
   it('parses CRLF and joins multiple data lines', () => {

@@ -16,6 +16,8 @@ describe('Grsai task recovery link', () => {
 
   it('recognizes Grsai from non-sensitive task metadata and only links errors', () => {
     expect(isGrsaiTask(task({ apiBaseUrl: 'https://grsai.dakka.com.cn/v1' }))).toBe(true)
+    expect(isGrsaiTask(task({ apiBaseUrl: 'https://grsaiapi.com/v1' }))).toBe(true)
+    expect(isGrsaiTask(task({ error: 'request failed at api.grsai.ai' }))).toBe(true)
     expect(shouldShowGrsaiTaskLink(task({ apiProfileName: 'Grsai 中转站' }))).toBe(true)
     expect(shouldShowGrsaiTaskLink(task({ apiBaseUrl: 'https://grsai.example', status: 'done' }))).toBe(false)
   })

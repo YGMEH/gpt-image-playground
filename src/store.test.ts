@@ -3828,6 +3828,41 @@ describe('agent built-in image tool failure', () => {
     })
   })
 
+  it('stops the Agent round after a Hybrid image error instead of asking the model to submit again', async () => {
+    const imageProfile = createDefaultOpenAIProfile({ id: 'image-profile', apiKey: 'image-key', apiMode: 'images' })
+    useStore.setState({
+      settings: normalizeSettings({
+        ...useStore.getState().settings,
+        profiles: [responsesProfile, imageProfile],
+        activeProfileId: responsesProfile.id,
+        agentApiConfigMode: 'hybrid',
+        agentTextProfileId: responsesProfile.id,
+        agentImageProfileId: imageProfile.id,
+        agentMaxToolRounds: 5,
+      }),
+    })
+    vi.mocked(callAgentResponsesApi).mockResolvedValueOnce({
+      text: '',
+      images: [],
+      outputItems: [{
+        type: 'function_call', name: 'generate_image', call_id: 'failed-single-call',
+        arguments: JSON.stringify({ id: 'single', prompt: 'single prompt' }),
+      }],
+      responseId: 'response-function',
+    })
+    vi.mocked(callImageApi).mockRejectedValueOnce(new Error('upstream generation failed'))
+
+    await submitAgentMessage()
+    await vi.waitFor(() => expect(useStore.getState().agentConversations[0].rounds[0]?.status).toBe('error'))
+
+    expect(callImageApi).toHaveBeenCalledTimes(1)
+    expect(callAgentResponsesApi).toHaveBeenCalledTimes(1)
+    expect(useStore.getState().tasks.find((item) => item.agentToolCallId === 'failed-single-call')).toMatchObject({
+      status: 'error',
+      error: 'upstream generation failed',
+    })
+  })
+
   it('does not commit or report a deleted Hybrid single-image result', async () => {
     const imageProfile = createDefaultOpenAIProfile({ id: 'image-profile', apiKey: 'image-key', apiMode: 'images' })
     const request = deferred<Awaited<ReturnType<typeof callImageApi>>>()

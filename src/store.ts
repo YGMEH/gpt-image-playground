@@ -89,6 +89,7 @@ let agentConversationPersistenceReady = false
 let agentConversationMigrationPending = false
 const AGENT_STOPPED_MESSAGE = '已停止生成。'
 const AGENT_RECOVERY_PAUSE_ERROR = 'AgentRecoveryPauseError'
+const AGENT_IMAGE_TOOL_ERROR = 'AgentImageToolError'
 const AGENT_CONVERSATION_TITLE_MAX_LENGTH = 28
 const ERROR_TOAST_MAX_LENGTH = 80
 type ToastType = 'info' | 'success' | 'error'
@@ -1905,6 +1906,16 @@ function isAgentRecoveryPauseError(err: unknown) {
   return err instanceof Error && err.name === AGENT_RECOVERY_PAUSE_ERROR
 }
 
+function createAgentImageToolError(message: string) {
+  const err = new Error(message)
+  err.name = AGENT_IMAGE_TOOL_ERROR
+  return err
+}
+
+function isAgentImageToolError(err: unknown) {
+  return err instanceof Error && err.name === AGENT_IMAGE_TOOL_ERROR
+}
+
 function appendAgentStoppedMessage(content: string) {
   const trimmed = content.trimEnd()
   if (!trimmed) return AGENT_STOPPED_MESSAGE
@@ -3040,13 +3051,14 @@ async function executeAgentRound(
         }
 
         failAgentImageTask(toolCallId, result.error!, result.rawResponsePayload)
-        return JSON.stringify({ id: item.id, status: 'error', error: result.error })
+        throw createAgentImageToolError(result.error!)
       } catch (err) {
         const error = err instanceof Error ? err.message : String(err)
         if (controller.signal.aborted) throw createAgentAbortError()
+        if (isAgentImageToolError(err)) throw err
         if (pauseAgentImageTaskForRecovery(toolCallId, err)) throw createAgentRecoveryPauseError()
         failAgentImageTask(toolCallId, error)
-        return JSON.stringify({ id: item.id, status: 'error', error })
+        throw createAgentImageToolError(error)
       }
     }
 
@@ -3189,6 +3201,11 @@ async function executeAgentRound(
 
       const successCount = outputImages.filter((img) => img.status === 'done').length
       toolCallsUsed += successCount
+
+      const failedImage = outputImages.find((image) => image.status === 'error')
+      if (failedImage) {
+        throw createAgentImageToolError(failedImage.error || '批量图像生成失败，已停止自动续跑')
+      }
 
       return JSON.stringify({ images: outputImages })
     }

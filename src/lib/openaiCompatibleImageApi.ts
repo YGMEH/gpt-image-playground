@@ -21,7 +21,7 @@ import {
   pickActualParams,
   PROMPT_REWRITE_GUARD_PREFIX,
 } from './imageApiShared'
-import { isEventStreamResponse, readJsonServerSentEvents } from './serverSentEvents'
+import { isJsonServerSentEventResponse, readJsonOrServerSentEventResponse, readJsonServerSentEvents } from './serverSentEvents'
 import { prependCodexCliSizePrompt } from './size'
 
 function getStreamPartialImages(profile: ApiProfile): number {
@@ -649,11 +649,15 @@ async function callImagesApiSingle(opts: CallApiOptions, profile: ApiProfile): P
       throw new Error(maybeAppendStreamingHint(errorMessage, response.status, profile.streamImages))
     }
 
-    if (profile.streamImages && isEventStreamResponse(response)) {
+    if (profile.streamImages && await isJsonServerSentEventResponse(response)) {
       return parseImagesApiStreamResponse(response, mime, opts.onPartialImage)
     }
 
-    return parseImagesApiResponse(await response.json() as ImageApiResponse, mime, controller.signal)
+    return parseImagesApiResponse(
+      await readJsonOrServerSentEventResponse(response) as ImageApiResponse,
+      mime,
+      controller.signal,
+    )
   } finally {
     clearTimeout(timeoutId)
   }
@@ -859,7 +863,7 @@ async function submitCustomRequest(mapping: CustomProviderSubmitMapping, opts: C
   })
 
   if (!response.ok) throw new Error(await getApiErrorMessage(response))
-  return response.json()
+  return readJsonOrServerSentEventResponse(response)
 }
 
 async function pollCustomTaskResult(
@@ -897,7 +901,7 @@ async function pollCustomTaskResult(
         throw new Error(await getApiErrorMessage(taskResponse))
       }
 
-      taskPayload = await taskResponse.json()
+      taskPayload = await readJsonOrServerSentEventResponse(taskResponse)
     } catch (err) {
       if (!signal?.aborted && isRecoverablePollingError(err)) continue
       throw err
@@ -1074,11 +1078,11 @@ async function callResponsesImageApiSingle(opts: CallApiOptions, profile: ApiPro
       throw new Error(maybeAppendStreamingHint(errorMessage, response.status, profile.streamImages))
     }
 
-    if (profile.streamImages && isEventStreamResponse(response)) {
+    if (profile.streamImages && await isJsonServerSentEventResponse(response)) {
       return parseResponsesApiStreamResponse(response, mime, opts.onPartialImage)
     }
 
-    const payload = await response.json() as ResponsesApiResponse
+    const payload = await readJsonOrServerSentEventResponse(response) as ResponsesApiResponse
     const imageResults = parseResponsesImageResults(payload, mime)
     const actualParams = mergeActualParams(
       imageResults[0]?.actualParams ?? {},

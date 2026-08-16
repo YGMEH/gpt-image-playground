@@ -11,6 +11,7 @@ import { createMaskPreviewDataUrl } from '../lib/canvasImage'
 import { dismissAllTooltips } from '../lib/tooltipDismiss'
 import { downloadImageEntriesAsZip, downloadImageIds, getImageZipEntries } from '../lib/downloadImages'
 import { isAgentTaskPromptPending } from '../lib/taskPromptDisplay'
+import { GRSAI_CONSUMPTION_LOG_URL, shouldShowGrsaiTaskLink } from '../lib/grsaiTask'
 import { replaceImageMentionsForApi } from '../lib/promptImageMentions'
 import { CloseIcon, CodeIcon, CopyIcon, DownloadIcon, EditIcon, LinkIcon, TrashIcon } from './icons'
 
@@ -84,6 +85,7 @@ export default function DetailModal() {
     }))
   }, [task?.params.n, task?.status, streamPreviewSlots, streamPreviewSrc])
   const activeStreamPreviewSrc = streamPreviewItems[imageIndex]?.src || ''
+  const showGrsaiTaskLink = task ? shouldShowGrsaiTaskLink(task, settings) : false
 
   useEffect(() => {
     setStreamPreviewLoaded(false)
@@ -745,6 +747,18 @@ export default function DetailModal() {
                     复制完整报错
                   </ViewportTooltip>
                 </div>
+                {showGrsaiTaskLink && (
+                  <a
+                    href={GRSAI_CONSUMPTION_LOG_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-orange-200/80 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-600 transition hover:bg-orange-100 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400 dark:hover:bg-orange-500/20"
+                    aria-label="打开 Grsai 消费日志"
+                  >
+                    <LinkIcon className="h-4 w-4" />
+                    Grsai 日志
+                  </a>
+                )}
                 {task.rawResponsePayload && (
                   <div className="relative group">
                     <button

@@ -43,6 +43,23 @@ describe('callImageApi', () => {
     },
   )
 
+  it('accepts a data-wrapped JSON response mislabeled as application/json without resubmitting', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(
+      'data: {"data":[{"b64_json":"aW1hZ2U="}]}\n\n',
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    ))
+
+    await expect(callImageApi({
+      settings: { ...DEFAULT_SETTINGS, apiKey: 'test-key', streamImages: false },
+      prompt: 'prompt',
+      params: { ...DEFAULT_PARAMS },
+      inputImageDataUrls: [],
+    })).resolves.toMatchObject({ images: ['data:image/png;base64,aW1hZ2U='] })
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect((fetchMock.mock.calls[0][1] as RequestInit).method).toBe('POST')
+  })
+
   it('does not add the prompt rewrite guard on Responses API when prompt rewrite is allowed', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
       output: [{
@@ -954,6 +971,47 @@ describe('callImageApi', () => {
       images: ['data:image/png;base64,aW1hZ2U='],
     })
     expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('accepts SSE-wrapped custom submit and poll responses while posting only once', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('data: {"id":"task-sse-1"}\n\n', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }))
+      .mockResolvedValueOnce(new Response('data: {"status":"succeeded","results":[{"b64_json":"aW1hZ2U="}]}\n\n', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }))
+
+    await expect(callImageApi({
+      settings: {
+        ...DEFAULT_SETTINGS,
+        customProviders: [{
+          id: 'custom-sse-async',
+          name: 'Custom SSE Async',
+          template: 'http-image',
+          submit: {
+            path: 'images/generations', method: 'POST', contentType: 'json',
+            body: { model: '$profile.model', prompt: '$prompt' }, taskIdPath: 'id',
+          },
+          poll: {
+            path: 'images/tasks/{task_id}', method: 'GET', intervalSeconds: 1,
+            statusPath: 'status', successValues: ['succeeded'], failureValues: ['failed'],
+            result: { b64JsonPaths: ['results.*.b64_json'] },
+          },
+        }],
+        profiles: [{
+          ...DEFAULT_SETTINGS.profiles[0], id: 'profile-custom-sse', provider: 'custom-sse-async',
+          baseUrl: 'https://api.example.com/v1', apiKey: 'test-key', model: 'model',
+        }],
+        activeProfileId: 'profile-custom-sse',
+      },
+      prompt: 'prompt', params: { ...DEFAULT_PARAMS }, inputImageDataUrls: [],
+    })).resolves.toEqual({ images: ['data:image/png;base64,aW1hZ2U='] })
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock.mock.calls.filter(([, init]) => (init as RequestInit)?.method === 'POST')).toHaveLength(1)
   })
 
   it('keeps async submit responses small and accepts a nested task id fallback', async () => {

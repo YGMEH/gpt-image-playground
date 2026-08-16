@@ -3,10 +3,46 @@ export interface ReadJsonServerSentEventsOptions {
   formatErrorMessage?: (message: string) => string
   getEventErrorMessage?: (event: Record<string, unknown>) => string | null
 }
-
 export function isEventStreamResponse(response: Response): boolean {
   return response.headers.get('Content-Type')?.toLowerCase().includes('text/event-stream') ?? false
 }
+
+/**
+ * 部分 OpenAI 兼容中转站会返回 `data: {...}`，但错误地标成 application/json。
+ * 使用 clone 探测正文，避免消费调用方后续真正要读取的响应流。
+ */
+export async function isJsonServerSentEventResponse(response: Response): Promise<boolean> {
+  if (isEventStreamResponse(response)) return true
+  try {
+    const text = await response.clone().text()
+    return /(?:^|\r?\n)data\s*:/.test(text.trimStart())
+  } catch {
+    return false
+  }
+}
+
+/** 读取普通 JSON，或读取被 `data:` 包装的单个/多个 JSON 事件并返回最后一个事件。 */
+export async function readJsonOrServerSentEventResponse(response: Response): Promise<unknown> {
+  const text = await response.text()
+  try {
+    return JSON.parse(text)
+  } catch (jsonError) {
+    const blocks = text.split(/\r?\n\r?\n/)
+    const events: unknown[] = []
+    for (const block of blocks) {
+      const data = parseServerSentEventBlock(block)
+      if (!data) continue
+      try {
+        events.push(JSON.parse(data))
+      } catch {
+        // 保留原始 JSON 错误，避免把 HTML/纯文本错误误报成 SSE。
+      }
+    }
+    if (events.length > 0) return events[events.length - 1]
+    throw jsonError
+  }
+}
+
 
 export function parseServerSentEventBlock(block: string): string | null {
   const dataLines: string[] = []

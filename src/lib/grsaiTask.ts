@@ -2,7 +2,7 @@ import type { AppSettings, TaskRecord } from '../types'
 
 export const GRSAI_CONSUMPTION_LOG_URL = 'https://nkxx.grsai.ai/zh/dashboard/consumption-log'
 
-const GRSAI_MARKER = /(?:grsai|dakka\.com\.cn)/i
+const GRSAI_MARKER = /(?:grsai(?:api)?(?:\.ai|\.com)?|dakka\.com\.cn)/i
 
 /** 仅使用非敏感元数据识别 Grsai；不会读取或暴露 API Key。 */
 export function isGrsaiTask(task: TaskRecord, settings?: AppSettings) {
