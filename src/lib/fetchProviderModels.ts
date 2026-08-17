@@ -80,6 +80,43 @@ function getLocalGrsaiCatalogModels(): string[] {
   return models
 }
 
+function describeModelsEndpoint(url: string) {
+  let host = 'unknown'
+  let path = 'unknown'
+  try {
+    const endpoint = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+    host = endpoint.hostname || 'unknown'
+    path = endpoint.pathname || '/'
+  } catch {
+    // Keep diagnostics safe if a custom proxy returns a non-URL endpoint.
+  }
+  return { host, path }
+}
+
+function isAbortError(error: unknown) {
+  return Boolean(
+    error
+    && typeof error === 'object'
+    && 'name' in error
+    && (error as { name?: string }).name === 'AbortError',
+  )
+}
+
+export function isBrowserNetworkFetchError(error: unknown) {
+  if (isAbortError(error) || !(error instanceof Error)) return false
+  const message = error.message.toLowerCase()
+  return error instanceof TypeError
+    || error.name === 'TypeError'
+    || /failed to fetch|networkerror|load failed|network request failed/.test(message)
+}
+
+export function createModelsListNetworkError(url: string) {
+  const { host, path } = describeModelsEndpoint(url)
+  return new Error(
+    `无法从该服务商读取模型列表\n诊断：主机=${host}，路径=${path}。该服务商可能未允许浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，或请服务商为当前网站开放 CORS。`,
+  )
+}
+
 export async function fetchProviderModels(settings: AppSettings, profile: ApiProfile): Promise<string[]> {
   if (!canRefreshProviderModels(settings, profile)) {
     throw new Error('当前服务商不支持自动刷新模型，请手动填写模型 ID')
@@ -121,8 +158,11 @@ export async function fetchProviderModels(settings: AppSettings, profile: ApiPro
     if (!models.length) throw new Error('接口未返回模型')
     return models
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (isAbortError(error)) {
       throw new Error('刷新模型超时')
+    }
+    if (isBrowserNetworkFetchError(error)) {
+      throw createModelsListNetworkError(url)
     }
     throw error instanceof Error ? error : new Error(String(error))
   } finally {

@@ -358,7 +358,7 @@ export default function TextSettingsTab({
               {textProfile.apiMode === 'responses'
                 ? <>Responses API 需要支持工具调用的文本模型，例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_RESPONSES_MODEL}</code>。</>
                 : <>Chat Completions 为通用文本对话接口，模型 ID 由你填写（例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_CHAT_MODEL}</code>）。「刷新模型」会请求接口的 /models 拉取候选。</>}
-              <div className="mt-1">{modelRefreshStatus}</div>
+              <div className="mt-1 whitespace-pre-line break-words">{modelRefreshStatus}</div>
             </div>
           </div>
 
