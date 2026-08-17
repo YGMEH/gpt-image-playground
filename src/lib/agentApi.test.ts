@@ -710,7 +710,7 @@ describe('callAgentResponsesApi', () => {
       systemPrompt: 'system',
       userText: 'user',
       imageDataUrls: ['data:image/webp;base64,aGk='],
-    })).rejects.toThrow(/Upstream error: 400\n诊断：接口=chat，模型=gemini-3\.1-flash-lite，图片=1张，图像负载=0\.00 MiB，格式=image\/webp/)
+    })).rejects.toThrow(/Upstream error: 400\n诊断：接口=chat，状态=HTTP 400，主机=grsai\.dakka\.com\.cn，路径=\/v1\/chat\/completions，模型=gemini-3\.1-flash-lite，图片=1张，图像负载=0\.00 MiB，格式=image\/webp/)
   })
 
   it('streams a multimodal workflow prompt through Responses with one POST', async () => {

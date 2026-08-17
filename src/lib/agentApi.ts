@@ -618,12 +618,25 @@ async function throwWorkflowApiError(
   profile: ApiProfile,
   imageDataUrls: string[],
   apiMode: 'chat' | 'responses',
+  endpointUrl: string,
 ): Promise<never> {
   const message = await getApiErrorMessage(response)
   const totalBytes = imageDataUrls.reduce((sum, dataUrl) => sum + getDataUrlDecodedByteSize(dataUrl), 0)
+  let endpointHost = 'unknown'
+  let endpointPath = 'unknown'
+  try {
+    const endpoint = new URL(endpointUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+    endpointHost = endpoint.hostname || 'unknown'
+    endpointPath = endpoint.pathname || '/'
+  } catch {
+    // Keep diagnostics safe if a custom proxy returns a non-URL endpoint.
+  }
   const mimes = [...new Set(imageDataUrls.map(getDataUrlMime))].join(', ') || 'none'
   const diagnostic = [
     `接口=${apiMode}`,
+    `状态=HTTP ${response.status}`,
+    `主机=${endpointHost}`,
+    `路径=${endpointPath}`,
     `模型=${profile.model || '未填写'}`,
     `图片=${imageDataUrls.length}张`,
     `图像负载=${(totalBytes / 1024 / 1024).toFixed(2)} MiB`,
@@ -1146,7 +1159,8 @@ export async function callWorkflowPromptApi(opts: {
       if (systemPrompt.trim()) messages.push({ role: 'system', content: systemPrompt.trim() })
       messages.push({ role: 'user', content: userContent })
 
-      const response = await fetch(buildApiUrl(profile.baseUrl, 'chat/completions', proxyConfig, useApiProxy), {
+      const endpointUrl = buildApiUrl(profile.baseUrl, 'chat/completions', proxyConfig, useApiProxy)
+      const response = await fetch(endpointUrl, {
         method: 'POST',
         headers: createHeaders(profile),
         cache: 'no-store',
@@ -1159,7 +1173,7 @@ export async function callWorkflowPromptApi(opts: {
         }),
         signal: controller.signal,
       })
-      if (!response.ok) await throwWorkflowApiError(response, profile, imageDataUrls ?? [], 'chat')
+      if (!response.ok) await throwWorkflowApiError(response, profile, imageDataUrls ?? [], 'chat', endpointUrl)
       if (isEventStreamResponse(response)) {
         return (await parseChatCompletionsStreamResponse(
           response,
@@ -1184,15 +1198,15 @@ export async function callWorkflowPromptApi(opts: {
       stream: true,
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
-
-    const response = await fetch(buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy), {
+    const endpointUrl = buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy)
+    const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: createHeaders(profile),
       cache: 'no-store',
       body: JSON.stringify(body),
       signal: controller.signal,
     })
-    if (!response.ok) await throwWorkflowApiError(response, profile, imageDataUrls ?? [], 'responses')
+    if (!response.ok) await throwWorkflowApiError(response, profile, imageDataUrls ?? [], 'responses', endpointUrl)
     if (isEventStreamResponse(response)) {
       return await parseWorkflowResponsesStreamResponse(response, controller.signal, signal)
     }
