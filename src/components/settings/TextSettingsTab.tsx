@@ -8,7 +8,7 @@ import {
   isAgentTextApiProfile,
   normalizeSettings,
 } from '../../lib/apiProfiles'
-import { canRefreshProviderModels, fetchProviderModels } from '../../lib/fetchProviderModels'
+import { canRefreshProviderModels, fetchProviderModels, mergeAvailableModels, parseImportedModelList } from '../../lib/fetchProviderModels'
 import Select from '../Select'
 import { PlusIcon, RefreshIcon, TrashIcon } from '../icons'
 
@@ -187,6 +187,49 @@ export default function TextSettingsTab({
     }
   }
 
+  const applyImportedModels = (text: string) => {
+    if (!textProfile) return
+    const models = parseImportedModelList(text)
+    if (!models.length) {
+      const message = '未识别到模型 ID。可粘贴 /v1/models 的 JSON，或每行一个模型名。'
+      setModelRefreshStatus(message)
+      showToast(message, 'error')
+      return
+    }
+    const nextModels = mergeAvailableModels(textProfile.availableModels, models)
+    const nextModel = textProfile.model.trim() || nextModels[0] || textProfile.model
+    updateTextProfile({ availableModels: nextModels, model: nextModel }, true)
+    setModelRefreshStatus(`已导入 ${nextModels.length} 个模型`)
+    showToast(`已导入 ${nextModels.length} 个模型`, 'success')
+  }
+
+  const importModelsFromClipboard = async () => {
+    if (!textProfile) return
+    try {
+      const text = await navigator.clipboard.readText()
+      applyImportedModels(text)
+    } catch {
+      const pasted = window.prompt('浏览器无法读取剪贴板。请粘贴模型列表 JSON，或每行一个模型 ID：')
+      if (pasted == null) return
+      applyImportedModels(pasted)
+    }
+  }
+
+  const addCurrentModelToList = () => {
+    if (!textProfile) return
+    const current = textProfile.model.trim()
+    if (!current) {
+      const message = '请先填写当前模型 ID'
+      setModelRefreshStatus(message)
+      showToast(message, 'info')
+      return
+    }
+    const nextModels = mergeAvailableModels(textProfile.availableModels, [current])
+    updateTextProfile({ availableModels: nextModels, model: current }, true)
+    setModelRefreshStatus(`已将 ${current} 加入候选，共 ${nextModels.length} 个模型`)
+    showToast(`已将 ${current} 加入候选`, 'success')
+  }
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl bg-gray-50/80 p-4 border border-gray-200/60 dark:bg-white/[0.02] dark:border-white/[0.05]">
@@ -324,16 +367,34 @@ export default function TextSettingsTab({
           <div className="block">
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <span className="block text-sm text-gray-600 dark:text-gray-300">模型 ID</span>
-              <button
-                type="button"
-                onClick={() => { void refreshModels() }}
-                disabled={isRefreshingModels}
-                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400 dark:hover:bg-blue-500/10"
-                aria-label="刷新模型"
-              >
-                <RefreshIcon className={`h-3.5 w-3.5 ${isRefreshingModels ? 'animate-spin' : ''}`} />
-                {isRefreshingModels ? '刷新中' : '刷新模型'}
-              </button>
+              <div className="flex flex-wrap items-center justify-end gap-1">
+                <button
+                  type="button"
+                  onClick={() => { void importModelsFromClipboard() }}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                  aria-label="导入模型列表"
+                >
+                  导入列表
+                </button>
+                <button
+                  type="button"
+                  onClick={addCurrentModelToList}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                  aria-label="加入当前模型"
+                >
+                  加入当前
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { void refreshModels() }}
+                  disabled={isRefreshingModels}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                  aria-label="刷新模型"
+                >
+                  <RefreshIcon className={`h-3.5 w-3.5 ${isRefreshingModels ? 'animate-spin' : ''}`} />
+                  {isRefreshingModels ? '刷新中' : '刷新模型'}
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
               {modelSelectOptions.length > 0 && (
@@ -357,7 +418,7 @@ export default function TextSettingsTab({
             <div data-selectable-text className="mt-1.5 text-xs text-gray-500 dark:text-gray-500">
               {textProfile.apiMode === 'responses'
                 ? <>Responses API 需要支持工具调用的文本模型，例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_RESPONSES_MODEL}</code>。</>
-                : <>Chat Completions 为通用文本对话接口，模型 ID 由你填写（例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_CHAT_MODEL}</code>）。「刷新模型」会请求接口的 /models 拉取候选。</>}
+                : <>Chat Completions 为通用文本对话接口，模型 ID 由你填写（例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_CHAT_MODEL}</code>）。「刷新模型」会请求接口的 /models；若服务商未开放浏览器跨域，可用「导入列表」或「加入当前」。</>}
               <div className="mt-1 whitespace-pre-line break-words">{modelRefreshStatus}</div>
             </div>
           </div>

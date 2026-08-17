@@ -59,6 +59,51 @@ export function parseProviderModelIds(payload: unknown): string[] {
   return normalizeAvailableModels(models) ?? []
 }
 
+function extractModelIdsFromUnknown(payload: unknown): string[] {
+  if (typeof payload === 'string') return parseImportedModelList(payload)
+  if (Array.isArray(payload)) {
+    const models = payload.map((item) => {
+      if (typeof item === 'string') return item.trim()
+      if (item && typeof item === 'object') {
+        const id = (item as Record<string, unknown>).id
+        return typeof id === 'string' ? id.trim() : ''
+      }
+      return ''
+    }).filter(Boolean)
+    return normalizeAvailableModels(models) ?? []
+  }
+  if (!payload || typeof payload !== 'object') return []
+
+  const record = payload as Record<string, unknown>
+  const fromProvider = parseProviderModelIds(record)
+  if (fromProvider.length) return fromProvider
+
+  const available = normalizeAvailableModels(record.availableModels) ?? []
+  const model = typeof record.model === 'string' ? record.model.trim() : ''
+  return normalizeAvailableModels([...available, model]) ?? []
+}
+
+export function parseImportedModelList(text: string): string[] {
+  const raw = text.trim()
+  if (!raw) return []
+
+  try {
+    return extractModelIdsFromUnknown(JSON.parse(raw) as unknown)
+  } catch {
+    // Fall through to delimited plain text.
+  }
+
+  const tokens = raw
+    .split(/[\s,;|]+/)
+    .map((item) => item.trim().replace(/^['"]+|['"]+$/g, ''))
+    .filter((item) => item && !/^(data|models|id|object|list)$/i.test(item) && !/^[{}\[\]]+$/.test(item))
+  return normalizeAvailableModels(tokens) ?? []
+}
+
+export function mergeAvailableModels(...lists: Array<readonly string[] | undefined>) {
+  return normalizeAvailableModels(lists.flatMap((list) => list ?? [])) ?? []
+}
+
 export function parseGrsaiCatalogHtml(html: string): string[] {
   const names = new Set<string>()
   const copyNameRe = /title="点击复制模型名称">\s*([^<]+?)\s*<\/h3>/gi
@@ -113,7 +158,7 @@ export function isBrowserNetworkFetchError(error: unknown) {
 export function createModelsListNetworkError(url: string) {
   const { host, path } = describeModelsEndpoint(url)
   return new Error(
-    `无法从该服务商读取模型列表\n诊断：主机=${host}，路径=${path}。该服务商可能未允许浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，或请服务商为当前网站开放 CORS。`,
+    `无法从该服务商读取模型列表\n诊断：主机=${host}，路径=${path}。该服务商未允许当前网站的浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，用「导入列表」粘贴其他客户端拿到的名单，或请服务商为当前网站开放 CORS。`,
   )
 }
 

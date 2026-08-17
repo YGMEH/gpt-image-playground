@@ -42,7 +42,7 @@ import Select from './Select'
 import { Checkbox } from './Checkbox'
 import ViewportTooltip from './ViewportTooltip'
 import { ChevronDownIcon, CloseIcon, CopyIcon, PlusIcon, TrashIcon, GithubIcon, ExportIcon, ImportIcon, DragHandleIcon, LinkIcon, RefreshIcon } from './icons'
-import { canRefreshProviderModels, fetchProviderModels } from '../lib/fetchProviderModels'
+import { canRefreshProviderModels, fetchProviderModels, mergeAvailableModels, parseImportedModelList } from '../lib/fetchProviderModels'
 import GeneralSettingsTab from './settings/GeneralSettingsTab'
 import AgentSettingsTab from './settings/AgentSettingsTab'
 import TextSettingsTab from './settings/TextSettingsTab'
@@ -521,6 +521,46 @@ export default function SettingsModal() {
     } finally {
       if (modelRefreshRequestIdRef.current === requestId) setIsRefreshingModels(false)
     }
+  }
+
+  const applyImportedModelsToActiveProfile = (text: string) => {
+    const models = parseImportedModelList(text)
+    if (!models.length) {
+      const message = '未识别到模型 ID。可粘贴 /v1/models 的 JSON，或每行一个模型名。'
+      setModelRefreshStatus(message)
+      showToast(message, 'error')
+      return
+    }
+    const nextModels = mergeAvailableModels(activeProfile.availableModels, models)
+    const nextModel = activeProfile.model.trim() || nextModels[0] || activeProfile.model
+    commitActiveProfilePatch({ availableModels: nextModels, model: nextModel })
+    setModelRefreshStatus(`已导入 ${nextModels.length} 个模型`)
+    showToast(`已导入 ${nextModels.length} 个模型`, 'success')
+  }
+
+  const importActiveModelsFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      applyImportedModelsToActiveProfile(text)
+    } catch {
+      const pasted = window.prompt('浏览器无法读取剪贴板。请粘贴模型列表 JSON，或每行一个模型 ID：')
+      if (pasted == null) return
+      applyImportedModelsToActiveProfile(pasted)
+    }
+  }
+
+  const addCurrentActiveModelToList = () => {
+    const current = activeProfile.model.trim()
+    if (!current) {
+      const message = '请先填写当前模型 ID'
+      setModelRefreshStatus(message)
+      showToast(message, 'info')
+      return
+    }
+    const nextModels = mergeAvailableModels(activeProfile.availableModels, [current])
+    commitActiveProfilePatch({ availableModels: nextModels, model: current })
+    setModelRefreshStatus(`已将 ${current} 加入候选，共 ${nextModels.length} 个模型`)
+    showToast(`已将 ${current} 加入候选`, 'success')
   }
 
   const handleClose = () => {
@@ -1565,16 +1605,34 @@ export default function SettingsModal() {
                   <span className="block text-sm text-gray-600 dark:text-gray-300">
                     模型 ID
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => { void refreshActiveModels() }}
-                    disabled={isRefreshingModels}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400 dark:hover:bg-blue-500/10"
-                    aria-label="刷新模型"
-                  >
-                    <RefreshIcon className={`h-3.5 w-3.5 ${isRefreshingModels ? 'animate-spin' : ''}`} />
-                    {isRefreshingModels ? '刷新中' : '刷新模型'}
-                  </button>
+                  <div className="flex flex-wrap items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      onClick={() => { void importActiveModelsFromClipboard() }}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                      aria-label="导入模型列表"
+                    >
+                      导入列表
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addCurrentActiveModelToList}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                      aria-label="加入当前模型"
+                    >
+                      加入当前
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { void refreshActiveModels() }}
+                      disabled={isRefreshingModels}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                      aria-label="刷新模型"
+                    >
+                      <RefreshIcon className={`h-3.5 w-3.5 ${isRefreshingModels ? 'animate-spin' : ''}`} />
+                      {isRefreshingModels ? '刷新中' : '刷新模型'}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {modelSelectOptions.length > 0 && (
@@ -1607,10 +1665,13 @@ export default function SettingsModal() {
                   ) : (
                     <>Images API 需要使用 GPT Image 模型，例如 <code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">{DEFAULT_IMAGES_MODEL}</code>。</>
                   )}
+                  {activeProfile.provider !== 'fal' && (
+                    <>「刷新模型」会请求接口的 /models；若服务商未开放浏览器跨域，可用「导入列表」或「加入当前」。</>
+                  )}
                   {activeProfile.provider === 'openai' && (
                     <>支持通过查询参数覆盖：<code className="rounded bg-gray-100 px-1 py-0.5 dark:bg-white/[0.06]">?model=</code>。</>
                   )}
-                  <div className="mt-1">{modelRefreshStatus}</div>
+                  <div className="mt-1 whitespace-pre-line break-words">{modelRefreshStatus}</div>
                 </div>
               </div>
 

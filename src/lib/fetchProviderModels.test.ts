@@ -8,7 +8,9 @@ import {
   isGrsaiCatalogModel,
   isGrsaiChatModel,
   isGrsaiImageModel,
+  mergeAvailableModels,
   parseGrsaiCatalogHtml,
+  parseImportedModelList,
   parseProviderModelIds,
 } from './fetchProviderModels'
 import { createDefaultOpenAIProfile, normalizeSettings } from './apiProfiles'
@@ -34,6 +36,47 @@ describe('parseProviderModelIds', () => {
 
   it('returns empty when payload has no models', () => {
     expect(parseProviderModelIds({ object: 'list' })).toEqual([])
+  })
+})
+
+describe('parseImportedModelList', () => {
+  it('reads OpenAI compatible JSON copied from another client', () => {
+    expect(parseImportedModelList(JSON.stringify({
+      data: [{ id: 'gpt-5.6-sol' }, { id: 'gpt-5.6-terra' }],
+    }))).toEqual(['gpt-5.6-sol', 'gpt-5.6-terra'])
+  })
+
+  it('reads newline or comma separated model IDs', () => {
+    expect(parseImportedModelList('gpt-5.6-sol\ngpt-4o-mini, nano-banana-2')).toEqual([
+      'gpt-4o-mini',
+      'gpt-5.6-sol',
+      'nano-banana-2',
+    ])
+  })
+
+  it('reads exported settings objects and models arrays', () => {
+    expect(parseImportedModelList(JSON.stringify({
+      availableModels: ['gpt-5.6-sol'],
+      model: 'gpt-4o-mini',
+    }))).toEqual(['gpt-4o-mini', 'gpt-5.6-sol'])
+    expect(parseImportedModelList(JSON.stringify({
+      models: ['provider/gpt-5.6-sol:latest', 'nano-banana-2'],
+    }))).toEqual(['nano-banana-2', 'provider/gpt-5.6-sol:latest'])
+  })
+
+  it('ignores empty text, invalid JSON wrappers, and list metadata tokens', () => {
+    expect(parseImportedModelList('')).toEqual([])
+    expect(parseImportedModelList('   ')).toEqual([])
+    expect(parseImportedModelList('{ "object": "list" }')).toEqual([])
+    expect(parseImportedModelList('data\nmodels\nid\nobject\nlist')).toEqual([])
+  })
+
+  it('merges current and imported model lists without duplicates', () => {
+    expect(mergeAvailableModels(['gpt-5.6-sol'], ['gpt-5.6-sol', 'gpt-4o-mini'])).toEqual([
+      'gpt-4o-mini',
+      'gpt-5.6-sol',
+    ])
+    expect(mergeAvailableModels(undefined, [], ['nano-banana-2'])).toEqual(['nano-banana-2'])
   })
 })
 
@@ -164,7 +207,7 @@ describe('network model refresh', () => {
     const settings = createOpenAICompatibleSettings('https://api.starwish.fit')
 
     await expect(fetchProviderModels(settings, settings.profiles[0])).rejects.toThrow(
-      /无法从该服务商读取模型列表\n诊断：主机=api\.starwish\.fit，路径=\/v1\/models。该服务商可能未允许浏览器跨域访问 \/v1\/models/,
+      /无法从该服务商读取模型列表\n诊断：主机=api\.starwish\.fit，路径=\/v1\/models。该服务商未允许当前网站的浏览器跨域访问 \/v1\/models[\s\S]*导入列表/,
     )
     fetchMock.mockRestore()
   })
@@ -197,7 +240,7 @@ describe('browser network fetch classification', () => {
 
   it('describes the sanitized models endpoint without leaking the full URL', () => {
     expect(createModelsListNetworkError('https://api.starwish.fit/v1/models?secret=1').message).toBe(
-      '无法从该服务商读取模型列表\n诊断：主机=api.starwish.fit，路径=/v1/models。该服务商可能未允许浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，或请服务商为当前网站开放 CORS。',
+      '无法从该服务商读取模型列表\n诊断：主机=api.starwish.fit，路径=/v1/models。该服务商未允许当前网站的浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，用「导入列表」粘贴其他客户端拿到的名单，或请服务商为当前网站开放 CORS。',
     )
   })
 })
