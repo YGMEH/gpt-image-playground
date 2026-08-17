@@ -70,6 +70,7 @@ import { cleanStaleAgentInputDrafts, clearInputDraftState, isEmptyAgentInputDraf
 import { ALL_FAVORITES_COLLECTION_ID, DEFAULT_FAVORITE_COLLECTION_ID, createDefaultFavoriteCollection, deleteFavoriteCollectionState, ensureDefaultFavoriteCollection, getTaskFavoriteCollectionIds, mergeFavoriteCollections, normalizeFavoriteCollectionIds, normalizeFavoriteCollectionName, normalizeFavoriteCollections, normalizeFavoritePatch, normalizeLoadedFavoriteState, resolveDefaultFavoriteCollectionId, sameFavoriteCollectionIds } from './lib/favoriteState'
 import { appendPromptText, createDefaultQuickPhrases, createSavedPrompt, findSavedPromptByContent, markSavedPromptUsed, normalizeQuickPhrase, updateSavedPrompt, type CreateSavedPromptInput } from './lib/promptLibraryState'
 import { buildWorkflowSystemPrompt, getWorkflowPromptByKind, type WorkflowPromptKind } from './data/workflowPrompts'
+import { prepareWorkflowImageDataUrls } from './lib/workflowImageInput'
 import { createPersistedState, mergePersistedAgentConversations, migratePersistedState, normalizePersistedState } from './lib/persistedState'
 import { addImageSizeParam, createTaskDonePatch, createTaskErrorPatch, deriveAgentImageActualParams, deriveGalleryActualParams, firstActualParams, hasActualParams, hasActualSizeParam, mapActualParamsByImage, mapRevisedPromptsByImage, markInterruptedOpenAIRunningTasks } from './lib/taskState'
 import { stripInjectedCodexCliSizePrompt } from './lib/size'
@@ -965,12 +966,11 @@ export const useStore = create<AppState>()(
 
         set({ workflowRunning: true })
         try {
-          const imageDataUrls: string[] = []
-          for (const img of inputImages) {
-            const cached = await ensureImageCached(img.id)
-            const dataUrl = cached ?? img.dataUrl
-            if (dataUrl) imageDataUrls.push(dataUrl)
-          }
+          const imageDataUrls = await prepareWorkflowImageDataUrls(
+            inputImages,
+            getImageThumbnail,
+            ensureImageCached,
+          )
           const userText = prompt.trim() || '请根据参考图生成最终提示词。'
           const result = await callWorkflowPromptApi({
             settings: createSettingsForApiProfile(normalizedSettings, activeProfile),

@@ -1,6 +1,7 @@
 import { DEFAULT_AGENT_MAX_TOOL_ROUNDS, DEFAULT_STREAM_PARTIAL_IMAGES, type ApiProfile, type AppSettings, type ResponsesApiResponse, type ResponsesOutputItem, type TaskParams } from '../types'
 import { buildApiUrl, readClientDevProxyConfig, shouldUseApiProxy } from './devProxy'
-import { appendStreamingFormatHint, getApiErrorMessage, getResponsesImageResultBase64, maybeAppendStreamingHint, MIME_MAP, normalizeBase64Image, pickActualParams, PROMPT_REWRITE_GUARD_PREFIX } from './imageApiShared'
+import { appendStreamingFormatHint, getApiErrorMessage, getDataUrlDecodedByteSize, getResponsesImageResultBase64, maybeAppendStreamingHint, MIME_MAP, normalizeBase64Image, pickActualParams, PROMPT_REWRITE_GUARD_PREFIX } from './imageApiShared'
+import { isGrsaiChatModel } from './grsaiModelCatalog'
 import { normalizeResponsesOutputItems } from './responsesOutputState'
 import { isEventStreamResponse, readJsonServerSentEvents, throwIfAborted } from './serverSentEvents'
 
@@ -593,6 +594,43 @@ async function parseAgentStreamResponse(
 export function isChatCompletionsProfile(profile: ApiProfile) {
   return profile.apiMode === 'chat'
 }
+
+function isGrsaiBaseUrl(baseUrl: string) {
+  try {
+    const hostname = new URL(baseUrl).hostname.toLowerCase()
+    return hostname === 'grsai.dakka.com.cn' || hostname === 'grsaiapi.com' || hostname.endsWith('.grsai.ai')
+  } catch {
+    return /(?:^|\.)grsai(?:api)?(?:\.dakka)?\.(?:com\.cn|com|ai)(?:\/|$)/i.test(baseUrl)
+  }
+}
+
+/** Grsai 的 Gemini/GPT 文本模型使用 OpenAI Chat Completions，不支持 Responses 端点。 */
+function shouldUseWorkflowChatCompletions(profile: ApiProfile) {
+  return isChatCompletionsProfile(profile) || (isGrsaiBaseUrl(profile.baseUrl) && isGrsaiChatModel(profile.model))
+}
+
+function getDataUrlMime(dataUrl: string) {
+  return dataUrl.match(/^data:([^;,]+)/i)?.[1]?.toLowerCase() || 'unknown'
+}
+
+async function throwWorkflowApiError(
+  response: Response,
+  profile: ApiProfile,
+  imageDataUrls: string[],
+  apiMode: 'chat' | 'responses',
+): Promise<never> {
+  const message = await getApiErrorMessage(response)
+  const totalBytes = imageDataUrls.reduce((sum, dataUrl) => sum + getDataUrlDecodedByteSize(dataUrl), 0)
+  const mimes = [...new Set(imageDataUrls.map(getDataUrlMime))].join(', ') || 'none'
+  const diagnostic = [
+    `接口=${apiMode}`,
+    `模型=${profile.model || '未填写'}`,
+    `图片=${imageDataUrls.length}张`,
+    `图像负载=${(totalBytes / 1024 / 1024).toFixed(2)} MiB`,
+    `格式=${mimes}`,
+  ].join('，')
+  throw new Error(`${message}\n诊断：${diagnostic}`)
+}
 type ChatContentPart =
   | { type: 'text'; text: string }
   | { type: 'image_url'; image_url: { url: string } }
@@ -1099,7 +1137,7 @@ export async function callWorkflowPromptApi(opts: {
   signal?.addEventListener('abort', abortFromCaller, { once: true })
 
   try {
-    if (isChatCompletionsProfile(profile)) {
+    if (shouldUseWorkflowChatCompletions(profile)) {
       const userContent: Array<Record<string, unknown>> = [{ type: 'text', text: userText }]
       for (const dataUrl of imageDataUrls ?? []) {
         userContent.push({ type: 'image_url', image_url: { url: dataUrl } })
@@ -1121,7 +1159,7 @@ export async function callWorkflowPromptApi(opts: {
         }),
         signal: controller.signal,
       })
-      if (!response.ok) throw new Error(await getApiErrorMessage(response))
+      if (!response.ok) await throwWorkflowApiError(response, profile, imageDataUrls ?? [], 'chat')
       if (isEventStreamResponse(response)) {
         return (await parseChatCompletionsStreamResponse(
           response,
@@ -1154,7 +1192,7 @@ export async function callWorkflowPromptApi(opts: {
       body: JSON.stringify(body),
       signal: controller.signal,
     })
-    if (!response.ok) throw new Error(await getApiErrorMessage(response))
+    if (!response.ok) await throwWorkflowApiError(response, profile, imageDataUrls ?? [], 'responses')
     if (isEventStreamResponse(response)) {
       return await parseWorkflowResponsesStreamResponse(response, controller.signal, signal)
     }

@@ -655,13 +655,9 @@ describe('callAgentResponsesApi', () => {
     })).resolves.toBe('普通响应提示词')
   })
 
-  it('streams a multimodal workflow prompt through Responses with one POST', async () => {
+  it('routes a Grsai Gemini workflow to Chat even when the saved profile says Responses', async () => {
     const streamBody = [
-      'data: {"type":"response.output_text.delta","delta":"干净"}',
-      '',
-      'data: {"type":"response.output_text.delta","delta":"重绘提示词"}',
-      '',
-      'data: {"type":"response.completed","response":{"id":"resp_workflow","output":[]}}',
+      'data: {"id":"chatcmpl_grsai","choices":[{"delta":{"content":"已纠正端点"}}]}',
       '',
       'data: [DONE]',
       '',
@@ -680,13 +676,75 @@ describe('callAgentResponsesApi', () => {
     await expect(callWorkflowPromptApi({
       settings: DEFAULT_SETTINGS,
       profile,
+      systemPrompt: 'system',
+      userText: 'user',
+      imageDataUrls: ['data:image/webp;base64,aGk='],
+    })).resolves.toBe('已纠正端点')
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://grsai.dakka.com.cn/v1/chat/completions')
+    const body = JSON.parse(String((fetchMock.mock.calls[0][1] as RequestInit).body))
+    expect(body.messages[1].content[1]).toEqual({
+      type: 'image_url',
+      image_url: { url: 'data:image/webp;base64,aGk=' },
+    })
+    expect(body.input).toBeUndefined()
+  })
+
+  it('adds safe workflow diagnostics to upstream errors', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+      error: { message: 'Upstream error: 400' },
+    }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+    const profile = createDefaultOpenAIProfile({
+      apiKey: 'secret-must-not-leak',
+      apiMode: 'chat',
+      model: 'gemini-3.1-flash-lite',
+      baseUrl: 'https://grsai.dakka.com.cn/v1',
+    })
+
+    await expect(callWorkflowPromptApi({
+      settings: DEFAULT_SETTINGS,
+      profile,
+      systemPrompt: 'system',
+      userText: 'user',
+      imageDataUrls: ['data:image/webp;base64,aGk='],
+    })).rejects.toThrow(/Upstream error: 400\n诊断：接口=chat，模型=gemini-3\.1-flash-lite，图片=1张，图像负载=0\.00 MiB，格式=image\/webp/)
+  })
+
+  it('streams a multimodal workflow prompt through Responses with one POST', async () => {
+    const streamBody = [
+      'data: {"type":"response.output_text.delta","delta":"干净"}',
+      '',
+      'data: {"type":"response.output_text.delta","delta":"重绘提示词"}',
+      '',
+      'data: {"type":"response.completed","response":{"id":"resp_workflow","output":[]}}',
+      '',
+      'data: [DONE]',
+      '',
+    ].join('\n')
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(streamBody, {
+      status: 200,
+      headers: { 'Content-Type': 'text/event-stream' },
+    }))
+    const profile = createDefaultOpenAIProfile({
+      apiKey: 'test-key',
+      apiMode: 'responses',
+      model: 'gpt-5.6-sol',
+      baseUrl: 'https://api.example.com/v1',
+    })
+
+    await expect(callWorkflowPromptApi({
+      settings: DEFAULT_SETTINGS,
+      profile,
       systemPrompt: '分析参考图并生成去脏重绘提示词',
       userText: '保持主体结构',
       imageDataUrls: ['data:image/png;base64,aGk='],
     })).resolves.toBe('干净重绘提示词')
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(String(fetchMock.mock.calls[0][0])).toBe('https://grsai.dakka.com.cn/v1/responses')
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.example.com/v1/responses')
     const [, init] = fetchMock.mock.calls[0]
     const body = JSON.parse(String((init as RequestInit).body))
     expect(body.stream).toBe(true)
