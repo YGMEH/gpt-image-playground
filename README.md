@@ -163,7 +163,7 @@
 - **多配置管理**：支持创建并保存多个 API 配置（包含服务商、API Key、模型等），按需快速切换；支持一键复制当前配置到列表底部，并通过拖拽对配置列表与服务商列表进行自定义排序。
 - **多服务商接入**：内置 OpenAI 兼容接口（含 `Images API` 和 `Responses API`）、fal.ai（支持队列），并支持通过 JSON 导入自定义 HTTP 服务商配置（兼容同步/异步任务）。
 - **Agent 模式独立 API 配置**：支持为 Agent 模式使用原生（Response API）或混合（Response API + Image API）的独立 API 配置，解决部分服务商/模型不支持 `image_generation` 工具的问题。
-- **API 代理**：OpenAI 兼容接口与 fal.ai 均可配置自定义代理。其中 OpenAI 兼容接口可开启同源 `/api-proxy/` 代理，交由 Docker 或本地开发环境转发至真实 API，绕开浏览器 CORS 限制。
+- **API 代理**：OpenAI 兼容接口与 fal.ai 均可配置自定义代理。其中 OpenAI 兼容接口可开启同源 `/api-proxy/` 代理，交由 Cloudflare Worker、Docker 或本地开发环境转发至真实 API，绕开浏览器 CORS 限制。若服务商（常见于挂 Cloudflare 的中转站）不给浏览器返回 CORS 头，可按 [自建 API 代理](#self-hosted-api-proxy) 部署自己的代理；无法部署时也能用「导入列表」手动写入模型名单。
 - **Codex CLI 兼容模式**：对上游为 Codex CLI 的 API，开启后应用 Codex CLI 实际支持的参数，并将多图生成拆分为并发单图。
 - **提示词防改写**：Responses API 会始终在请求文本前加入强制指令防止提示词被改写；开启 Codex CLI 模式后，Images API 也会获得同等保护。
 - **智能诊断提示**：当检测到接口异常改写行为或缺少常规参数时，自动提示开启相应的兼容模式。
@@ -241,6 +241,60 @@ $env:VITE_DEFAULT_API_URL="https://api.openai.com/v1"; npm run deploy:cf
 3. **自定义服务商链接**（公开可访问的 `.json` 文件地址，或含 `?settings={URL 编码后的 JSON}` 参数的分享链接）→ 页面启动时自动导入自定义服务商，不会把该链接当作 API 请求地址。**配置和示例见：[自定义服务商](#custom-provider-config)。**
 
 **仅展示默认配置**：构建前设置 `VITE_SHOW_DEFAULT_CONFIG_ONLY=true` 后，前端会隐藏多配置切换和服务商类型切换，只允许使用默认配置。
+
+**内置 API 代理**：`src/worker.ts` 会先处理 `/api-proxy/*` 与 `/v1/*` 两类请求，再把其余请求交给静态资源。配置 `UPSTREAM_BASE_URL` 与 `ALLOWED_ORIGINS` 后即可解决中转站不开放 CORS 的问题，详见 [自建 API 代理](#self-hosted-api-proxy)。
+
+</details>
+
+<a id="self-hosted-api-proxy"></a>
+
+<details>
+<summary><strong>🛡️ 自建 API 代理（解决中转站不给浏览器开放 CORS）</strong></summary>
+
+部分中转站（尤其是挂在 Cloudflare 后面的）不会给浏览器返回 `Access-Control-Allow-*` 头，甚至直接用 403 拦掉 `OPTIONS` 预检。这种情况下：
+
+- 其它桌面客户端可以正常调用（它们不受同源策略约束）；
+- 但纯静态网页（GitHub Pages、Vercel 静态托管）既刷不出模型列表，也发不出带 `Authorization` 的请求。
+
+服务商的 CORS 策略只能由服务商修改，因此需要一个你自己控制的代理来转发请求。项目内置了两套实现，二选一即可。
+
+**方案 A：Cloudflare Worker（推荐，无需服务器）**
+
+Worker 会同时托管前端静态资源与 `/api-proxy/*`、`/v1/*` 代理路径。
+
+```bash
+npx wrangler login
+# 上游地址需要写到版本前缀
+npx wrangler secret put UPSTREAM_BASE_URL     # 例如 https://ai.blue1.top/v1
+npx wrangler secret put ALLOWED_ORIGINS       # 例如 https://你的域名,https://你的用户名.github.io
+# 可选：把上游 Key 放在服务端，浏览器就不必保存真实 Key
+npx wrangler secret put UPSTREAM_API_KEY
+npm run deploy:cf
+```
+
+部署完成后有两种用法：
+
+1. **直接使用 Worker 上的前端**：打开 `https://<worker 域名>`，在设置里打开 **API 代理** 开关（需要构建时设置 `VITE_API_PROXY_AVAILABLE=true`），请求走同源 `/api-proxy/...`。
+2. **继续使用现有前端（含 GitHub Pages）**：把设置里的 **API URL** 填成 `https://<worker 域名>/v1`，API Key 照常填写。Worker 会带上白名单里的 CORS 头，模型列表刷新与普通调用都能正常工作。
+
+**方案 B：Docker / Nginx（已有服务器）**
+
+复用 `deploy/nginx.conf` 的 `/api-proxy/` 转发：
+
+```bash
+docker run -d -p 3000:80 \
+  -e ENABLE_API_PROXY=true \
+  -e LOCK_API_PROXY=true \
+  -e API_PROXY_URL=https://ai.blue1.top/v1 \
+  ghcr.io/ygmeh/gpt-image-playground:latest
+```
+
+**安全提示**
+
+- `ALLOWED_ORIGINS` 必须填写具体来源。填 `*` 会让任何网站都能借你的代理消耗上游额度。
+- 代理只放行 `GET` / `POST` / `OPTIONS`，且路径必须落在 `UPSTREAM_BASE_URL` 之内，`..` 之类的写法会被拒绝。
+- 上游密钥请通过 `wrangler secret` 或容器环境变量注入，不要写进仓库或 `VITE_*` 前端变量（`VITE_*` 会被打包进公开的 JS 文件）。
+- 如果 Key 曾经出现在聊天记录、截图或日志里，请立刻在服务商后台撤销并重建。
 
 </details>
 

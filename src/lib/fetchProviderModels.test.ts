@@ -207,7 +207,7 @@ describe('network model refresh', () => {
     const settings = createOpenAICompatibleSettings('https://api.starwish.fit')
 
     await expect(fetchProviderModels(settings, settings.profiles[0])).rejects.toThrow(
-      /无法从该服务商读取模型列表\n诊断：主机=api\.starwish\.fit，路径=\/v1\/models。该服务商未允许当前网站的浏览器跨域访问 \/v1\/models[\s\S]*导入列表/,
+      /无法从该服务商读取模型列表\n诊断：主机=api\.starwish\.fit，路径=\/v1\/models。该服务商未允许当前网站的浏览器跨域访问 \/v1\/models[\s\S]*导入列表[\s\S]*自建 API 代理/,
     )
     fetchMock.mockRestore()
   })
@@ -240,7 +240,7 @@ describe('browser network fetch classification', () => {
 
   it('describes the sanitized models endpoint without leaking the full URL', () => {
     expect(createModelsListNetworkError('https://api.starwish.fit/v1/models?secret=1').message).toBe(
-      '无法从该服务商读取模型列表\n诊断：主机=api.starwish.fit，路径=/v1/models。该服务商未允许当前网站的浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，用「导入列表」粘贴其他客户端拿到的名单，或请服务商为当前网站开放 CORS。',
+      '无法从该服务商读取模型列表\n诊断：主机=api.starwish.fit，路径=/v1/models。该服务商未允许当前网站的浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，用「导入列表」粘贴其他客户端拿到的名单，部署自建 API 代理后把 API URL 指向代理（见 README「自建 API 代理」），或请服务商为当前网站开放 CORS。',
     )
   })
 })
