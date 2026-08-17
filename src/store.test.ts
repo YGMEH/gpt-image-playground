@@ -152,6 +152,11 @@ describe('error toast messages', () => {
   it('uses a generic message for long raw errors without a title', () => {
     expect(getErrorToastMessage(`invalid request ${'x'.repeat(90)}`)).toBe('操作失败，请查看详情')
   })
+
+  it('preserves the complete sanitized workflow diagnostic', () => {
+    const message = 'Upstream error: 400\n诊断：接口=chat，模型=gemini-3.1-flash-lite，图片=1张，图像负载=0.23 MiB，格式=image/webp'
+    expect(getErrorToastMessage(message)).toBe(message)
+  })
 })
 
 function agentConversation(overrides: Partial<AgentConversation> = {}): AgentConversation {

@@ -100,6 +100,10 @@ export function getErrorToastMessage(message: string): string {
   const text = message.trim()
   if (!text) return '操作失败'
 
+  // Workflow API errors append a sanitized diagnostic line. Keep that structured
+  // context intact so users can report the actual endpoint/model/payload details.
+  if (/^诊断：/m.test(text)) return text
+
   const firstLine = text.split(/\r?\n/)[0]?.trim() ?? ''
   const separatorIndex = firstLine.search(/[：:]/)
   if (separatorIndex > 0) {
@@ -1091,10 +1095,11 @@ export const useStore = create<AppState>()(
       showToast: (message, type = 'info') => {
         const toastMessage = getToastMessage(message, type)
         const toast = { message: toastMessage, type }
+        const isDiagnosticError = type === 'error' && /^诊断：/m.test(toastMessage)
         set({ toast })
         setTimeout(() => {
           set((s) => (s.toast === toast ? { toast: null } : s))
-        }, 3000)
+        }, isDiagnosticError ? 12_000 : 3000)
       },
 
       // Confirm
