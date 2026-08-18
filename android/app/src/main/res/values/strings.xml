@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GPT Image Playground</string>
+    <string name="title_activity_main">GPT Image Playground</string>
+    <string name="package_name">io.github.ygmeh.gptimageplayground</string>
+    <string name="custom_url_scheme">io.github.ygmeh.gptimageplayground</string>
+</resources>
