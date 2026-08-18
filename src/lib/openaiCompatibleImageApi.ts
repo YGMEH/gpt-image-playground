@@ -1,4 +1,6 @@
+import { Capacitor } from '@capacitor/core'
 import { DEFAULT_STREAM_PARTIAL_IMAGES, type ApiProfile, type CustomProviderDefinition, type CustomProviderPollMapping, type CustomProviderResultMapping, type CustomProviderSubmitMapping, type ImageApiResponse, type ImageResponseItem, type ResponsesApiResponse, type ResponsesOutputItem, type TaskParams } from '../types'
+
 import { dataUrlToBlob, imageDataUrlToPngBlob, maskDataUrlToPngBlob } from './canvasImage'
 import { buildApiUrl, readClientDevProxyConfig, shouldUseApiProxy } from './devProxy'
 import {
@@ -628,7 +630,7 @@ async function callImagesApiSingle(opts: CallApiOptions, profile: ApiProfile): P
         body.response_format = 'b64_json'
       }
       if (profile.streamImages) {
-        body.stream = true
+        body.stream = !Capacitor.isNativePlatform()
         body.partial_images = getStreamPartialImages(profile)
       }
 
@@ -1059,7 +1061,7 @@ async function callResponsesImageApiSingle(opts: CallApiOptions, profile: ApiPro
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
     if (profile.streamImages) {
-      body.stream = true
+      body.stream = !Capacitor.isNativePlatform()
     }
 
     const response = await fetch(buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy), {
