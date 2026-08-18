@@ -1,4 +1,6 @@
+import { Capacitor } from '@capacitor/core'
 import { DEFAULT_AGENT_MAX_TOOL_ROUNDS, DEFAULT_STREAM_PARTIAL_IMAGES, type ApiProfile, type AppSettings, type ResponsesApiResponse, type ResponsesOutputItem, type TaskParams } from '../types'
+
 import { buildApiUrl, readClientDevProxyConfig, shouldUseApiProxy } from './devProxy'
 import { appendStreamingFormatHint, getApiErrorMessage, getDataUrlDecodedByteSize, getResponsesImageResultBase64, maybeAppendStreamingHint, MIME_MAP, normalizeBase64Image, pickActualParams, PROMPT_REWRITE_GUARD_PREFIX } from './imageApiShared'
 import { isGrsaiChatModel } from './grsaiModelCatalog'
@@ -918,7 +920,8 @@ async function callAgentChatCompletionsApi(opts: {
         createAgentInstructions(settings, (imageProfile ?? profile).codexCli ? params.size : undefined),
       ),
       tools: convertChatToolsToOpenAI(tools),
-      stream: true,
+      // CapacitorHttp uses native request buffering; request one JSON response on Android.
+      stream: !Capacitor.isNativePlatform(),
     }
     const response = await fetch(buildApiUrl(profile.baseUrl, 'chat/completions', proxyConfig, useApiProxy), {
       method: 'POST',
@@ -1167,9 +1170,8 @@ export async function callWorkflowPromptApi(opts: {
         body: JSON.stringify({
           model: profile.model || settings.model,
           messages,
-          // Grsai/Gemini 的 OpenAI 兼容 Chat 端点要求使用流式响应；
-          // 与常规 Agent Chat 链路保持一致，避免非流式请求被上游以 400 拒绝。
-          stream: true,
+          // Android native HTTP returns a buffered JSON response instead of browser SSE.
+          stream: !Capacitor.isNativePlatform(),
         }),
         signal: controller.signal,
       })
@@ -1193,9 +1195,8 @@ export async function callWorkflowPromptApi(opts: {
       model: profile.model || settings.model,
       instructions: systemPrompt,
       input: [{ role: 'user', content }],
-      // Grsai/Gemini 的 Responses 端点同样要求流式响应；
-      // 与常规 Agent Chat 链路保持一致，避免非流式请求被上游以 400 拒绝。
-      stream: true,
+      // Android native HTTP returns a buffered JSON response instead of browser SSE.
+      stream: !Capacitor.isNativePlatform(),
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
     const endpointUrl = buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy)
@@ -1307,9 +1308,8 @@ export async function callBatchImageSingle(opts: {
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
     if (profile.streamImages) {
-      body.stream = true
+      body.stream = !Capacitor.isNativePlatform()
     }
-
     const response = await fetch(buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy), {
       method: 'POST',
       headers: createHeaders(profile),
