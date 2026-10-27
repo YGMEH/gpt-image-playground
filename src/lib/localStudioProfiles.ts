@@ -10,9 +10,22 @@ import { readRuntimeEnv } from './runtimeEnv'
 
 export const LOCAL_GRSAI_PROVIDER_ID = 'custom-grsai-dakka'
 export const LOCAL_GRSAI_PROFILE_ID = 'grsai-dakka-default'
-export const LOCAL_CHANSHUI_PROFILE_ID = 'chanshui-text'
+export const LOCAL_GCMOD_PROFILE_ID = 'gcmod-text'
+/** 旧版掺水种子配置的 id；该服务商已 401 且不开放 CORS，启动时迁移掉。 */
+export const LEGACY_CHANSHUI_PROFILE_ID = 'chanshui-text'
 export const LOCAL_GRSAI_BASE_URL = 'https://grsai.dakka.com.cn/v1'
-export const LOCAL_CHANSHUI_BASE_URL = 'https://cssmapi.fun/v1'
+export const LOCAL_GCMOD_BASE_URL = 'https://gcmod.bond/v1'
+export const LOCAL_GCMOD_TEXT_MODELS = [
+  'deepseek-v4.1-flash',
+  'glm-5.3',
+  'glm-5.3-flash',
+  'gemini-3.8-flash',
+  'gpt-5.6-terra',
+  'gpt-5.6-luna',
+  'gpt-6-luna',
+  'grok-4.7',
+  'minimax-m3.1-flash',
+] as const
 
 function readLocalKey(value: string | undefined) {
   return readRuntimeEnv(value)
@@ -62,7 +75,7 @@ export function createLocalGrsaiProvider(): CustomProviderDefinition {
 
 export function createLocalStudioProfiles(): ApiProfile[] {
   const grsaiKey = readLocalKey(import.meta.env.VITE_GRSAI_DAKKA_API_KEY)
-  const chanshuiKey = readLocalKey(import.meta.env.VITE_CHANSHUI_API_KEY)
+  const gcmodKey = readLocalKey(import.meta.env.VITE_GCMOD_API_KEY)
 
   return [
     {
@@ -81,13 +94,13 @@ export function createLocalStudioProfiles(): ApiProfile[] {
       streamImages: false,
     },
     {
-      id: LOCAL_CHANSHUI_PROFILE_ID,
-      name: '掺水文本',
+      id: LOCAL_GCMOD_PROFILE_ID,
+      name: 'gcmod 文本',
       provider: 'openai',
-      baseUrl: LOCAL_CHANSHUI_BASE_URL,
-      apiKey: chanshuiKey,
+      baseUrl: LOCAL_GCMOD_BASE_URL,
+      apiKey: gcmodKey,
       model: 'deepseek-v4.1-flash',
-      availableModels: ['deepseek-v4.1-flash', 'gpt-6-astra', 'gpt-6.1-sol', 'deepseek-flash'],
+      availableModels: [...LOCAL_GCMOD_TEXT_MODELS],
       timeout: DEFAULT_API_TIMEOUT,
       apiMode: 'chat',
       codexCli: false,
@@ -157,16 +170,22 @@ export function ensureLocalStudioSettings(settings: AppSettings): AppSettings {
     }
   }
 
-  const active = profiles.find((profile) => profile.id === settings.activeProfileId)
+  // 掺水已失效（Key 401 且不开放 CORS），启动时把它从配置里摘掉，避免继续占位。
+  const migratedProfiles = profiles.filter((profile) => profile.id !== LEGACY_CHANSHUI_PROFILE_ID)
+  const removedLegacyText = migratedProfiles.length !== profiles.length
+  const workingProfiles = removedLegacyText ? migratedProfiles : profiles
+
+  const active = workingProfiles.find((profile) => profile.id === settings.activeProfileId)
   const activeProfileId = isUntouchedDefaultOpenAI(active) && existingProfileIds.has(LOCAL_GRSAI_PROFILE_ID)
     ? LOCAL_GRSAI_PROFILE_ID
     : settings.activeProfileId
   // 文本配置存在时顺手把 Agent 切到混合模式，生图仍走 Grsai，对话走文本配置。
-  const hasTextProfile = profiles.some((profile) => profile.id === LOCAL_CHANSHUI_PROFILE_ID && profile.apiKey.trim())
-  const enablingAgent = settings.agentApiConfigMode === 'off' && hasTextProfile
+  const hasTextProfile = workingProfiles.some((profile) => profile.id === LOCAL_GCMOD_PROFILE_ID && profile.apiKey.trim())
+  const textProfileMissing = removedLegacyText && settings.agentTextProfileId === LEGACY_CHANSHUI_PROFILE_ID
+  const enablingAgent = (settings.agentApiConfigMode === 'off' || textProfileMissing) && hasTextProfile
   const agentApiConfigMode = enablingAgent ? 'hybrid' : settings.agentApiConfigMode
   const agentTextProfileId = enablingAgent
-    ? LOCAL_CHANSHUI_PROFILE_ID
+    ? LOCAL_GCMOD_PROFILE_ID
     : settings.agentTextProfileId
   // 首次开启时把图像配置指向 Grsai，避免沿用默认的空白 OpenAI 配置。
   const agentImageProfileId = enablingAgent
@@ -176,7 +195,7 @@ export function ensureLocalStudioSettings(settings: AppSettings): AppSettings {
   return normalizeSettings({
     ...settings,
     customProviders,
-    profiles,
+    profiles: workingProfiles,
     activeProfileId,
     agentApiConfigMode,
     agentTextProfileId,

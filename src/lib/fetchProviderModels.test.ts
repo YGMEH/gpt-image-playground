@@ -3,6 +3,7 @@ import {
   canRefreshProviderModels,
   createModelsListNetworkError,
   fetchProviderModels,
+  filterModelsByApiMode,
   getGrsaiCatalogModels,
   isBrowserNetworkFetchError,
   isGrsaiCatalogModel,
@@ -207,7 +208,7 @@ describe('network model refresh', () => {
     const settings = createOpenAICompatibleSettings('https://api.starwish.fit')
 
     await expect(fetchProviderModels(settings, settings.profiles[0])).rejects.toThrow(
-      /无法从该服务商读取模型列表\n诊断：主机=api\.starwish\.fit，路径=\/v1\/models。该服务商未允许当前网站的浏览器跨域访问 \/v1\/models[\s\S]*导入列表[\s\S]*自建 API 代理/,
+      /无法从该服务商读取模型列表\n诊断：主机=api\.starwish\.fit，路径=\/v1\/models。该服务商没有为浏览器开放跨域（CORS）[\s\S]*对话请求同样会被拦截[\s\S]*自建 API 代理/,
     )
     fetchMock.mockRestore()
   })
@@ -269,6 +270,38 @@ describe('network model refresh', () => {
     fetchMock.mockRestore()
   })
 
+  it('separates image, video and text models from a mixed gateway list', () => {
+    const all = [
+      'agnes-2.5-flash',
+      'agnes-image-2.5-flash',
+      'agnes-video-2.5-flash',
+      'deepseek-v4.1-flash',
+      'glm-5.3',
+      'gpt-image-2.5',
+      'grok-4.7',
+      'minimax-m3.1-flash',
+    ]
+
+    expect(filterModelsByApiMode(all, 'chat')).toEqual([
+      'agnes-2.5-flash',
+      'deepseek-v4.1-flash',
+      'glm-5.3',
+      'grok-4.7',
+      'minimax-m3.1-flash',
+    ])
+    expect(filterModelsByApiMode(all, 'images')).toEqual([
+      'agnes-image-2.5-flash',
+      'gpt-image-2.5',
+    ])
+  })
+
+  it('keeps Grsai image and chat models in their own lists', () => {
+    const all = ['gpt-image-2', 'nano-banana-2', 'gemini-3-pro', 'gpt-5.6-sol']
+
+    expect(filterModelsByApiMode(all, 'images')).toEqual(['gpt-image-2', 'nano-banana-2'])
+    expect(filterModelsByApiMode(all, 'chat')).toEqual(['gemini-3-pro', 'gpt-5.6-sol'])
+  })
+
   it('uses a custom provider declared model list instead of calling /models', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch')
     const settings = normalizeSettings({
@@ -305,8 +338,10 @@ describe('browser network fetch classification', () => {
   })
 
   it('describes the sanitized models endpoint without leaking the full URL', () => {
-    expect(createModelsListNetworkError('https://api.starwish.fit/v1/models?secret=1').message).toBe(
-      '无法从该服务商读取模型列表\n诊断：主机=api.starwish.fit，路径=/v1/models。该服务商未允许当前网站的浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，用「导入列表」粘贴其他客户端拿到的名单，部署自建 API 代理后把 API URL 指向代理（见 README「自建 API 代理」），或请服务商为当前网站开放 CORS。',
-    )
+    const message = createModelsListNetworkError('https://api.starwish.fit/v1/models?secret=1').message
+    expect(message).toContain('主机=api.starwish.fit，路径=/v1/models')
+    expect(message).toContain('没有为浏览器开放跨域（CORS）')
+    expect(message).toContain('对话请求同样会被拦截')
+    expect(message).not.toContain('secret=1')
   })
 })

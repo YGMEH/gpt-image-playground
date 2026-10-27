@@ -59,16 +59,29 @@ export function parseProviderModelIds(payload: unknown): string[] {
   return normalizeAvailableModels(models) ?? []
 }
 
+/** 生图模型名里的强特征词；比只看厂商前缀可靠，能识别 agnes-image-* 这类非 Grsai 命名。 */
+const IMAGE_MODEL_RE = /(?:^|[-_/.])(image|imagen|banana|flux|dall-?e|sdxl?|stable-?diffusion|seedream|kolors|midjourney|ideogram|recraft|gpt-image|nano-banana)(?:[-_/.]|$)/i
+/** 视频/音频类模型不能用于生图或文本对话。 */
+const VIDEO_MODEL_RE = /(?:^|[-_/.])(video|veo|sora|kling|hailuo|minimax-h\d|wanx?)(?:[-_/.]|$)/i
+
+function isVideoModelId(id: string) {
+  return VIDEO_MODEL_RE.test(id.trim())
+}
+
+function isImageModelId(id: string) {
+  return IMAGE_MODEL_RE.test(id.trim()) && !isVideoModelId(id)
+}
+
 /**
- * 中转站常把生图和文本模型放在同一个 /models 列表里。按接口模式剔除明显不属于
- * 当前模式的模型，避免在文本配置里选到 nano-banana，或在生图配置里选到 gemini。
+ * 中转站常把生图、视频和文本模型放在同一个 /models 列表里。按接口模式剔除
+ * 明显不属于当前模式的模型，避免在文本配置里选到 nano-banana，或在生图配置里选到 deepseek。
  */
 export function filterModelsByApiMode(models: string[], apiMode: ApiMode): string[] {
   if (apiMode === 'images') {
-    const filtered = models.filter((id) => !isGrsaiChatModel(id))
+    const filtered = models.filter(isImageModelId)
     return filtered.length ? filtered : models
   }
-  const filtered = models.filter((id) => !isGrsaiImageModel(id))
+  const filtered = models.filter((id) => !isImageModelId(id) && !isVideoModelId(id))
   return filtered.length ? filtered : models
 }
 
@@ -172,7 +185,7 @@ export function isBrowserNetworkFetchError(error: unknown) {
 export function createModelsListNetworkError(url: string) {
   const { host, path } = describeModelsEndpoint(url)
   return new Error(
-    `无法从该服务商读取模型列表\n诊断：主机=${host}，路径=${path}。该服务商未允许当前网站的浏览器跨域访问 /v1/models，或网络请求被阻断。可手动填写模型 ID，用「导入列表」粘贴其他客户端拿到的名单，部署自建 API 代理后把 API URL 指向代理（见 README「自建 API 代理」），或请服务商为当前网站开放 CORS。`,
+    `无法从该服务商读取模型列表\n诊断：主机=${host}，路径=${path}。该服务商没有为浏览器开放跨域（CORS），不只是 /v1/models——对话请求同样会被拦截。\n可选做法：\n· 填一个允许跨域的地址（同一服务商常另有备用域名）\n· 部署自建 API 代理后把 API URL 指向代理（见 README「自建 API 代理」）\n· 请服务商为当前网站开放 CORS\n· 临时方案：模型 ID 手动填写或用「导入列表」粘贴，但仍需解决跨域才能对话`,
   )
 }
 
