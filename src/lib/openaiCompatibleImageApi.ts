@@ -719,11 +719,28 @@ function resolveTemplateValue(value: unknown, context: Record<string, unknown>):
   return value
 }
 
+/** 把 "1024x1536" 拆成像素串、最简比例和分辨率档位，供自定义服务商模板使用。 */
+function describeCustomProviderSize(size: string) {
+  const trimmed = size.trim()
+  const match = trimmed.match(/^(\d+)\s*[xX×]\s*(\d+)$/)
+  // size 为 auto 时返回空值，模板变量会被自动省略，交给服务商默认值。
+  if (!match) return { pixels: undefined, ratio: undefined, tier: undefined }
+
+  const width = Number(match[1])
+  const height = Number(match[2])
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+  const divisor = gcd(width, height) || 1
+  const pixels = width * height
+  const tier = pixels <= 1_572_864 ? '1K' : pixels <= 4_194_304 ? '2K' : '4K'
+  return { pixels: `${width}x${height}`, ratio: `${width / divisor}:${height / divisor}`, tier }
+}
+
 function createCustomProviderContext(opts: CallApiOptions, profile: ApiProfile) {
   return {
     profile,
     prompt: opts.prompt,
     params: opts.params,
+    size: describeCustomProviderSize(opts.params.size),
     inputImages: {
       dataUrls: opts.inputImageDataUrls.length ? opts.inputImageDataUrls : undefined,
       count: opts.inputImageDataUrls.length,

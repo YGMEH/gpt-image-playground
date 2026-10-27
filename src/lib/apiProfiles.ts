@@ -294,6 +294,10 @@ export function normalizeCustomProviderDefinition(input: unknown, usedIds = new 
     id,
     name: rawName,
     template,
+    defaultBaseUrl: typeof record.defaultBaseUrl === 'string' && record.defaultBaseUrl.trim()
+      ? record.defaultBaseUrl.trim()
+      : undefined,
+    defaultModels: normalizeAvailableModels(record.defaultModels),
     submit: normalizeSubmitMapping(record.submit, {
       path: DEFAULT_CUSTOM_PROVIDER_PATHS.generationPath,
       method: 'POST',
@@ -398,13 +402,14 @@ export function switchApiProfileProvider(profile: ApiProfile, provider: ApiProvi
   }
 
   if (customProvider) {
-    const shouldUseOpenAIDefaults = profile.provider === 'fal'
+    // fal 的地址与自定义服务商不通用，切过来时不能沿用；其余情况优先用服务商声明的默认地址。
+    const inheritedBaseUrl = profile.provider === 'fal' ? '' : profile.baseUrl
     return {
       ...profile,
       provider: customProvider.id,
-      baseUrl: savedDraft?.baseUrl ?? (shouldUseOpenAIDefaults ? DEFAULT_BASE_URL : profile.baseUrl || DEFAULT_BASE_URL),
-      model: savedDraft?.model ?? (shouldUseOpenAIDefaults ? DEFAULT_IMAGES_MODEL : profile.model || DEFAULT_IMAGES_MODEL),
-      availableModels: savedDraft?.availableModels,
+      baseUrl: savedDraft?.baseUrl ?? customProvider.defaultBaseUrl ?? (inheritedBaseUrl || DEFAULT_BASE_URL),
+      model: savedDraft?.model ?? customProvider.defaultModels?.[0] ?? DEFAULT_IMAGES_MODEL,
+      availableModels: savedDraft?.availableModels ?? customProvider.defaultModels,
       apiMode: 'images',
       reasoningEffort: savedDraft?.reasoningEffort,
       codexCli: false,

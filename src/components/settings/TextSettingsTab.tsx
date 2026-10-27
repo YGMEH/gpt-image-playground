@@ -230,6 +230,23 @@ export default function TextSettingsTab({
     showToast(`已将 ${current} 加入候选`, 'success')
   }
 
+  const addModelManually = async () => {
+    if (!textProfile) return
+    const input = window.prompt('输入要添加的文本模型 ID（多个可用逗号或换行分隔）：')
+    if (input == null) return
+    const models = parseImportedModelList(input)
+    if (!models.length) {
+      const message = '未识别到模型 ID'
+      setModelRefreshStatus(message)
+      showToast(message, 'error')
+      return
+    }
+    const nextModels = mergeAvailableModels(textProfile.availableModels, models)
+    updateTextProfile({ availableModels: nextModels, model: models[0] }, true)
+    setModelRefreshStatus(`已添加 ${models.length} 个模型，共 ${nextModels.length} 个候选`)
+    showToast(`已添加 ${models.length} 个模型`, 'success')
+  }
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl bg-gray-50/80 p-4 border border-gray-200/60 dark:bg-white/[0.02] dark:border-white/[0.05]">
@@ -368,6 +385,15 @@ export default function TextSettingsTab({
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <span className="block text-sm text-gray-600 dark:text-gray-300">模型 ID</span>
               <div className="flex flex-wrap items-center justify-end gap-1">
+                <button
+                  type="button"
+                  onClick={addModelManually}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                  aria-label="添加模型"
+                >
+                  <PlusIcon className="h-3.5 w-3.5" />
+                  添加模型
+                </button>
                 <button
                   type="button"
                   onClick={() => { void importModelsFromClipboard() }}

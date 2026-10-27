@@ -61,8 +61,10 @@ export const CUSTOM_PROVIDER_LLM_PROMPT = `# 角色
 - profiles：API 配置数组，每项描述一个可直接使用的连接配置，引用 customProviders 中的服务商。
 
 ## customProviders 元素（Manifest）
-每个元素的顶层字段：id、name、submit、editSubmit、poll。
+每个元素的顶层字段：id、name、defaultBaseUrl、defaultModels、submit、editSubmit、poll。
 id 是服务商的唯一标识，用于 profiles 中的 provider 字段引用，建议使用 custom-{英文短名} 格式。
+defaultBaseUrl 是该服务商的 API 基础地址，可选；填写后新建配置切到该服务商时自动预填。
+defaultModels 是该服务商支持的模型 ID 数组，可选；填写后「刷新模型」直接使用该清单，不再请求 /models。
 submit 是文生图提交配置，必填。
 editSubmit 是图生图或局部重绘提交配置，可选。如果文生图和图生图使用同一个 JSON 接口，可以省略 editSubmit，并在 submit.body 中加入 image_urls。
 poll 是异步任务查询配置，可选；同步接口不要写 poll。
@@ -96,6 +98,7 @@ body 模板变量：
 - $profile.model：用户在设置里填写的模型 ID。
 - $prompt：当前提示词。
 - $params.size、$params.quality、$params.output_format、$params.output_compression、$params.moderation、$params.n：应用内参数。
+- $size.pixels（如 1024x1536）、$size.ratio（最简比例，如 2:3）、$size.tier（1K/2K/4K）：由尺寸换算出的值，size 为 auto 时自动省略。
 - $inputImages.dataUrls：参考图 data URL 数组；没有参考图时会自动省略该字段。
 - $mask.dataUrl：遮罩图 data URL；没有遮罩时会自动省略该字段。
 

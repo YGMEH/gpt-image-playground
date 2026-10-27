@@ -1,10 +1,17 @@
+import type { ApiMode } from '../types'
+
 export const GRSAI_IMAGE_MODELS = [
   'gpt-image-2',
   'gpt-image-2-vip',
+  'gpt-image-2.5',
+  'gpt-image-2.5-flare',
+  'gpt-image-2.5-sunburst',
+  'nano-banana',
   'nano-banana-2',
+  'nano-banana-2.1',
+  'nano-banana-2-cl',
   'nano-banana-2-2k-cl',
   'nano-banana-2-4k-cl',
-  'nano-banana-2-cl',
   'nano-banana-2-lite',
   'nano-banana-fast',
   'nano-banana-pro',
@@ -45,6 +52,9 @@ export function isGrsaiCatalogModel(id: string) {
   return isGrsaiImageModel(id) || isGrsaiChatModel(id)
 }
 
-export function getGrsaiCatalogModels() {
+/** 按接口模式返回可用模型：生图与文本模型不能混用，未指定模式时返回完整目录。 */
+export function getGrsaiCatalogModels(apiMode?: ApiMode) {
+  if (apiMode === 'chat' || apiMode === 'responses') return [...GRSAI_CHAT_MODELS]
+  if (apiMode === 'images') return [...GRSAI_IMAGE_MODELS]
   return [...GRSAI_CATALOG_MODELS]
 }

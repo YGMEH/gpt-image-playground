@@ -1,22 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createDefaultOpenAIProfile, DEFAULT_OPENAI_PROFILE_ID, DEFAULT_SETTINGS, normalizeSettings } from './apiProfiles'
 import {
-  LOCAL_CODE2ALITA_HIGH_PROFILE_ID,
-  LOCAL_CODE2ALITA_LOW_PROFILE_ID,
+  LOCAL_CHANSHUI_PROFILE_ID,
   LOCAL_GRSAI_PROFILE_ID,
   LOCAL_GRSAI_PROVIDER_ID,
   ensureLocalStudioSettings,
 } from './localStudioProfiles'
 
 describe('ensureLocalStudioSettings', () => {
-  it('appends the two local providers onto the untouched default OpenAI profile', () => {
+  it('seeds the Grsai image profile and the Chanshui text profile', () => {
     const next = ensureLocalStudioSettings(DEFAULT_SETTINGS)
 
     expect(next.profiles.map((profile) => profile.id)).toEqual([
       DEFAULT_OPENAI_PROFILE_ID,
       LOCAL_GRSAI_PROFILE_ID,
-      LOCAL_CODE2ALITA_HIGH_PROFILE_ID,
-      LOCAL_CODE2ALITA_LOW_PROFILE_ID,
+      LOCAL_CHANSHUI_PROFILE_ID,
     ])
     expect(next.customProviders.map((provider) => provider.id)).toContain(LOCAL_GRSAI_PROVIDER_ID)
     expect(next.activeProfileId).toBe(LOCAL_GRSAI_PROFILE_ID)
@@ -24,9 +22,14 @@ describe('ensureLocalStudioSettings', () => {
       name: 'Grsai Dakka',
       provider: LOCAL_GRSAI_PROVIDER_ID,
       model: 'gpt-image-2',
+      apiMode: 'images',
     })
-    expect(next.profiles.find((profile) => profile.id === LOCAL_CODE2ALITA_HIGH_PROFILE_ID)?.name).toBe('Code2Alita 高质量')
-    expect(next.profiles.find((profile) => profile.id === LOCAL_CODE2ALITA_LOW_PROFILE_ID)?.name).toBe('Code2Alita 低质量')
+    expect(next.profiles.find((profile) => profile.id === LOCAL_CHANSHUI_PROFILE_ID)).toMatchObject({
+      name: '掺水文本',
+      provider: 'openai',
+      baseUrl: 'https://cssmapi.fun/v1',
+      apiMode: 'chat',
+    })
   })
 
   it('does not duplicate local studio profiles on a second pass', () => {
@@ -37,13 +40,13 @@ describe('ensureLocalStudioSettings', () => {
     expect(twice.customProviders).toHaveLength(once.customProviders.length)
   })
 
-  it('repairs persisted Grsai settings to use the async task workflow', () => {
+  it('repairs persisted Grsai settings to the native async protocol', () => {
     const current = ensureLocalStudioSettings(DEFAULT_SETTINGS)
     const next = ensureLocalStudioSettings(normalizeSettings({
       ...current,
       customProviders: current.customProviders.map((provider) => provider.id === LOCAL_GRSAI_PROVIDER_ID ? {
         ...provider,
-        submit: { ...provider.submit, body: { ...provider.submit.body, replyType: undefined }, taskIdPath: undefined },
+        submit: { ...provider.submit, path: 'draw/completions', taskIdPath: undefined },
         poll: undefined,
       } : provider),
       profiles: current.profiles.map((profile) => profile.id === LOCAL_GRSAI_PROFILE_ID ? {
@@ -54,7 +57,11 @@ describe('ensureLocalStudioSettings', () => {
     }))
 
     expect(next.customProviders.find((provider) => provider.id === LOCAL_GRSAI_PROVIDER_ID)).toMatchObject({
-      submit: { taskIdPath: 'id', body: expect.objectContaining({ replyType: 'async' }) },
+      submit: {
+        path: 'api/generate',
+        taskIdPath: 'id',
+        body: expect.objectContaining({ replyType: 'async', aspectRatio: '$size.ratio', imageSize: '$size.tier' }),
+      },
       poll: { path: 'api/result?id={task_id}' },
     })
     const repairedProfile = next.profiles.find((profile) => profile.id === LOCAL_GRSAI_PROFILE_ID)
@@ -73,8 +80,7 @@ describe('ensureLocalStudioSettings', () => {
     expect(next.profiles.map((profile) => profile.id)).toEqual([
       DEFAULT_OPENAI_PROFILE_ID,
       LOCAL_GRSAI_PROFILE_ID,
-      LOCAL_CODE2ALITA_HIGH_PROFILE_ID,
-      LOCAL_CODE2ALITA_LOW_PROFILE_ID,
+      LOCAL_CHANSHUI_PROFILE_ID,
     ])
   })
 
@@ -92,10 +98,21 @@ describe('ensureLocalStudioSettings', () => {
     expect(next.agentTextProfileId).toBe(DEFAULT_OPENAI_PROFILE_ID)
   })
 
-  it('does not seed any text/chat profile on an untouched studio', () => {
+  it('leaves Agent mode off until a text key is available', () => {
+    vi.stubEnv('VITE_CHANSHUI_API_KEY', '')
     const next = ensureLocalStudioSettings(DEFAULT_SETTINGS)
-    expect(next.profiles.some((profile) => profile.apiMode === 'chat')).toBe(false)
     expect(next.agentApiConfigMode).toBe('off')
+    vi.unstubAllEnvs()
+  })
+
+  it('switches Agent to hybrid once the text profile has a key', () => {
+    vi.stubEnv('VITE_CHANSHUI_API_KEY', 'seed-chanshui-key')
+    const next = ensureLocalStudioSettings(DEFAULT_SETTINGS)
+
+    expect(next.agentApiConfigMode).toBe('hybrid')
+    expect(next.agentTextProfileId).toBe(LOCAL_CHANSHUI_PROFILE_ID)
+    expect(next.agentImageProfileId).toBe(LOCAL_GRSAI_PROFILE_ID)
+    vi.unstubAllEnvs()
   })
 
   it('fills an empty local key from env without replacing an existing key', () => {

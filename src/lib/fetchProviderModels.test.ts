@@ -230,6 +230,72 @@ describe('network model refresh', () => {
     await expect(fetchProviderModels(settings, settings.profiles[0])).rejects.toThrow('API_KEY_REQUIRED')
     fetchMock.mockRestore()
   })
+
+  it('drops image models from a chat profile model list', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        data: [{ id: 'gpt-4o-mini' }, { id: 'gpt-5.6-sol' }, { id: 'nano-banana-2' }, { id: 'gpt-image-2' }],
+      }), { status: 200 }),
+    )
+    const settings = createOpenAICompatibleSettings()
+
+    await expect(fetchProviderModels(settings, settings.profiles[0])).resolves.toEqual(['gpt-4o-mini', 'gpt-5.6-sol'])
+    fetchMock.mockRestore()
+  })
+
+  it('drops chat models from an images profile model list', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        data: [{ id: 'gpt-image-2' }, { id: 'gemini-3-pro' }, { id: 'nano-banana-2' }],
+      }), { status: 200 }),
+    )
+    const settings = normalizeSettings({
+      profiles: [createDefaultOpenAIProfile({ name: '生图', baseUrl: 'https://api.example.com', model: 'gpt-image-2', apiKey: 'sk-test' })],
+    })
+
+    await expect(fetchProviderModels(settings, settings.profiles[0])).resolves.toEqual(['gpt-image-2', 'nano-banana-2'])
+    fetchMock.mockRestore()
+  })
+
+  it('falls back to the full list when filtering would empty it', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ data: [{ id: 'gemini-3-pro' }] }), { status: 200 }),
+    )
+    const settings = normalizeSettings({
+      profiles: [createDefaultOpenAIProfile({ name: '生图', baseUrl: 'https://api.example.com', model: 'gpt-image-2', apiKey: 'sk-test' })],
+    })
+
+    await expect(fetchProviderModels(settings, settings.profiles[0])).resolves.toEqual(['gemini-3-pro'])
+    fetchMock.mockRestore()
+  })
+
+  it('uses a custom provider declared model list instead of calling /models', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    const settings = normalizeSettings({
+      customProviders: [{
+        id: 'custom-static',
+        name: 'Static Provider',
+        defaultModels: ['model-b', 'model-a'],
+        submit: { path: 'images/generations' },
+      }],
+      profiles: [{
+        id: 'static',
+        name: 'Static',
+        provider: 'custom-static',
+        baseUrl: 'https://example.com/v1',
+        apiKey: 'sk-test',
+        model: 'model-a',
+        timeout: 300,
+        apiMode: 'images',
+        codexCli: false,
+        apiProxy: false,
+      }],
+    })
+
+    await expect(fetchProviderModels(settings, settings.profiles[0])).resolves.toEqual(['model-a', 'model-b'])
+    expect(fetchMock).not.toHaveBeenCalled()
+    fetchMock.mockRestore()
+  })
 })
 
 describe('browser network fetch classification', () => {

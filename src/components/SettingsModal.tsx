@@ -563,6 +563,22 @@ export default function SettingsModal() {
     showToast(`已将 ${current} 加入候选`, 'success')
   }
 
+  const addActiveModelManually = () => {
+    const input = window.prompt('输入要添加的模型 ID（多个可用逗号或换行分隔）：')
+    if (input == null) return
+    const models = parseImportedModelList(input)
+    if (!models.length) {
+      const message = '未识别到模型 ID'
+      setModelRefreshStatus(message)
+      showToast(message, 'error')
+      return
+    }
+    const nextModels = mergeAvailableModels(activeProfile.availableModels, models)
+    commitActiveProfilePatch({ availableModels: nextModels, model: models[0] })
+    setModelRefreshStatus(`已添加 ${models.length} 个模型，共 ${nextModels.length} 个候选`)
+    showToast(`已添加 ${models.length} 个模型`, 'success')
+  }
+
   const handleClose = () => {
     if (isExportingData || isImportingData) {
       showDataTransferBusyToast()
@@ -1001,6 +1017,8 @@ export default function SettingsModal() {
     setEditingCustomProviderId(provider.id)
     setCustomProviderJson(JSON.stringify({
       name: provider.name,
+      defaultBaseUrl: provider.defaultBaseUrl,
+      defaultModels: provider.defaultModels,
       submit: provider.submit,
       editSubmit: provider.editSubmit,
       poll: provider.poll,
@@ -1112,6 +1130,8 @@ export default function SettingsModal() {
       const provider = imported.customProviders[0]
       setCustomProviderJson(JSON.stringify({
         name: provider.name,
+        defaultBaseUrl: provider.defaultBaseUrl,
+        defaultModels: provider.defaultModels,
         submit: provider.submit,
         editSubmit: provider.editSubmit,
         poll: provider.poll,
@@ -1606,6 +1626,15 @@ export default function SettingsModal() {
                     模型 ID
                   </span>
                   <div className="flex flex-wrap items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      onClick={addActiveModelManually}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                      aria-label="添加模型"
+                    >
+                      <PlusIcon className="h-3.5 w-3.5" />
+                      添加模型
+                    </button>
                     <button
                       type="button"
                       onClick={() => { void importActiveModelsFromClipboard() }}

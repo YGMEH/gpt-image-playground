@@ -1,8 +1,8 @@
-import type { ApiProfile, AppSettings, CustomProviderDefinition } from '../types'
+import type { ApiMode, ApiProfile, AppSettings, CustomProviderDefinition } from '../types'
 import { buildApiUrl, readClientDevProxyConfig, shouldUseApiProxy } from './devProxy'
 import { getApiErrorMessage } from './imageApiShared'
 import { isOpenAICompatibleProvider, normalizeAvailableModels } from './apiProfiles'
-import { getGrsaiCatalogModels, isGrsaiCatalogModel } from './grsaiModelCatalog'
+import { getGrsaiCatalogModels, isGrsaiCatalogModel, isGrsaiChatModel, isGrsaiImageModel } from './grsaiModelCatalog'
 
 export {
   GRSAI_CATALOG_MODELS,
@@ -47,7 +47,7 @@ export function parseProviderModelIds(payload: unknown): string[] {
     ? record.data
     : Array.isArray(record.models)
       ? record.models
-      : Array.isArray(record.data) ? record.data : []
+      : []
   const models = raw.map((item) => {
     if (typeof item === 'string') return item.trim()
     if (item && typeof item === 'object') {
@@ -57,6 +57,19 @@ export function parseProviderModelIds(payload: unknown): string[] {
     return ''
   }).filter(Boolean)
   return normalizeAvailableModels(models) ?? []
+}
+
+/**
+ * 中转站常把生图和文本模型放在同一个 /models 列表里。按接口模式剔除明显不属于
+ * 当前模式的模型，避免在文本配置里选到 nano-banana，或在生图配置里选到 gemini。
+ */
+export function filterModelsByApiMode(models: string[], apiMode: ApiMode): string[] {
+  if (apiMode === 'images') {
+    const filtered = models.filter((id) => !isGrsaiChatModel(id))
+    return filtered.length ? filtered : models
+  }
+  const filtered = models.filter((id) => !isGrsaiImageModel(id))
+  return filtered.length ? filtered : models
 }
 
 function extractModelIdsFromUnknown(payload: unknown): string[] {
@@ -119,8 +132,9 @@ export function parseGrsaiCatalogHtml(html: string): string[] {
   return normalizeAvailableModels([...names].filter(isGrsaiCatalogModel)) ?? []
 }
 
-function getLocalGrsaiCatalogModels(): string[] {
-  const models = normalizeAvailableModels(getGrsaiCatalogModels()) ?? []
+function getLocalGrsaiCatalogModels(profile: ApiProfile): string[] {
+  // Grsai 没有 /models，本地目录必须按接口模式过滤，否则文本配置里会混进生图模型。
+  const models = normalizeAvailableModels(getGrsaiCatalogModels(profile.apiMode)) ?? []
   if (!models.length) throw new Error('本地 Grsai 模型目录为空')
   return models
 }
@@ -166,9 +180,12 @@ export async function fetchProviderModels(settings: AppSettings, profile: ApiPro
   if (!canRefreshProviderModels(settings, profile)) {
     throw new Error('当前服务商不支持自动刷新模型，请手动填写模型 ID')
   }
-  if (isGrsaiCatalogProvider(settings, profile)) {
-    return getLocalGrsaiCatalogModels()
-  }
+  const customProvider = settings.customProviders.find((item) => item.id === profile.provider)
+  // 服务商声明了自己的模型清单时优先用本地清单，省掉一次可能被 CORS 拦住的请求。
+  const localModels = isGrsaiCatalogProvider(settings, profile)
+    ? getLocalGrsaiCatalogModels(profile)
+    : normalizeAvailableModels(customProvider?.defaultModels) ?? []
+  if (localModels.length) return localModels
   if (!profile.apiKey.trim()) {
     throw new Error('请先填写 API Key')
   }
@@ -199,7 +216,7 @@ export async function fetchProviderModels(settings: AppSettings, profile: ApiPro
       const message = await getApiErrorMessage(new Response(raw, { status: response.status, headers: response.headers }))
       throw new Error(message || `HTTP ${response.status}`)
     }
-    const models = parseProviderModelIds(payload)
+    const models = filterModelsByApiMode(parseProviderModelIds(payload), profile.apiMode)
     if (!models.length) throw new Error('接口未返回模型')
     return models
   } catch (error) {

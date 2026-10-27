@@ -63,6 +63,10 @@ export interface CustomProviderDefinition {
   id: string
   name: string
   template?: CustomProviderTemplate
+  /** 新建配置切到该服务商时预填的 API 地址；留空由用户填写 */
+  defaultBaseUrl?: string
+  /** 服务商不提供 /models 时，「刷新模型」回退使用的模型清单 */
+  defaultModels?: string[]
   submit: CustomProviderSubmitMapping
   editSubmit?: CustomProviderSubmitMapping
   poll?: CustomProviderPollMapping

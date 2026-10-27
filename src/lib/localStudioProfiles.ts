@@ -5,14 +5,14 @@ import {
   DEFAULT_OPENAI_PROFILE_ID,
   normalizeSettings,
 } from './apiProfiles'
-import { getGrsaiCatalogModels } from './grsaiModelCatalog'
+import { GRSAI_IMAGE_MODELS } from './grsaiModelCatalog'
 import { readRuntimeEnv } from './runtimeEnv'
+
 export const LOCAL_GRSAI_PROVIDER_ID = 'custom-grsai-dakka'
 export const LOCAL_GRSAI_PROFILE_ID = 'grsai-dakka-default'
-export const LOCAL_CODE2ALITA_HIGH_PROFILE_ID = 'code2alita-high'
-export const LOCAL_CODE2ALITA_LOW_PROFILE_ID = 'code2alita-low'
+export const LOCAL_CHANSHUI_PROFILE_ID = 'chanshui-text'
 export const LOCAL_GRSAI_BASE_URL = 'https://grsai.dakka.com.cn/v1'
-export const LOCAL_CODE2ALITA_BASE_URL = 'https://code2alita.com/v1'
+export const LOCAL_CHANSHUI_BASE_URL = 'https://cssmapi.fun/v1'
 
 function readLocalKey(value: string | undefined) {
   return readRuntimeEnv(value)
@@ -23,23 +23,25 @@ export function createLocalGrsaiProvider(): CustomProviderDefinition {
     id: LOCAL_GRSAI_PROVIDER_ID,
     name: 'Grsai Dakka',
     template: 'http-image',
+    defaultBaseUrl: LOCAL_GRSAI_BASE_URL,
+    defaultModels: [...GRSAI_IMAGE_MODELS],
     submit: {
-      path: 'draw/completions',
+      // Grsai 原生协议：aspectRatio + imageSize + replyType=async，参考图走 images（base64 data URI）。
+      path: 'api/generate',
       method: 'POST',
       contentType: 'json',
       body: {
         model: '$profile.model',
         prompt: '$prompt',
-        size: '$params.size',
-        quality: '$params.quality',
-        n: '$params.n',
-        urls: '$inputImages.dataUrls',
+        aspectRatio: '$size.ratio',
+        imageSize: '$size.tier',
+        images: '$inputImages.dataUrls',
         replyType: 'async',
       },
       taskIdPath: 'id',
       result: {
-        imageUrlPaths: ['data.*.url'],
-        b64JsonPaths: ['data.*.b64_json'],
+        imageUrlPaths: ['results.*.url'],
+        b64JsonPaths: [],
       },
     },
     poll: {
@@ -60,8 +62,7 @@ export function createLocalGrsaiProvider(): CustomProviderDefinition {
 
 export function createLocalStudioProfiles(): ApiProfile[] {
   const grsaiKey = readLocalKey(import.meta.env.VITE_GRSAI_DAKKA_API_KEY)
-  const highKey = readLocalKey(import.meta.env.VITE_CODE2ALITA_HIGH_API_KEY)
-  const lowKey = readLocalKey(import.meta.env.VITE_CODE2ALITA_LOW_API_KEY)
+  const chanshuiKey = readLocalKey(import.meta.env.VITE_CHANSHUI_API_KEY)
 
   return [
     {
@@ -71,7 +72,7 @@ export function createLocalStudioProfiles(): ApiProfile[] {
       baseUrl: LOCAL_GRSAI_BASE_URL,
       apiKey: grsaiKey,
       model: DEFAULT_IMAGES_MODEL,
-      availableModels: getGrsaiCatalogModels(),
+      availableModels: [...GRSAI_IMAGE_MODELS],
       timeout: DEFAULT_API_TIMEOUT,
       apiMode: 'images',
       codexCli: false,
@@ -80,27 +81,15 @@ export function createLocalStudioProfiles(): ApiProfile[] {
       streamImages: false,
     },
     {
-      id: LOCAL_CODE2ALITA_HIGH_PROFILE_ID,
-      name: 'Code2Alita 高质量',
+      id: LOCAL_CHANSHUI_PROFILE_ID,
+      name: '掺水文本',
       provider: 'openai',
-      baseUrl: LOCAL_CODE2ALITA_BASE_URL,
-      apiKey: highKey,
-      model: DEFAULT_IMAGES_MODEL,
+      baseUrl: LOCAL_CHANSHUI_BASE_URL,
+      apiKey: chanshuiKey,
+      model: 'deepseek-v4.1-flash',
+      availableModels: ['deepseek-v4.1-flash', 'gpt-6-astra', 'gpt-6.1-sol', 'deepseek-flash'],
       timeout: DEFAULT_API_TIMEOUT,
-      apiMode: 'images',
-      codexCli: false,
-      apiProxy: false,
-      streamImages: false,
-    },
-    {
-      id: LOCAL_CODE2ALITA_LOW_PROFILE_ID,
-      name: 'Code2Alita 低质量',
-      provider: 'openai',
-      baseUrl: LOCAL_CODE2ALITA_BASE_URL,
-      apiKey: lowKey,
-      model: DEFAULT_IMAGES_MODEL,
-      timeout: DEFAULT_API_TIMEOUT,
-      apiMode: 'images',
+      apiMode: 'chat',
       codexCli: false,
       apiProxy: false,
       streamImages: false,
@@ -172,11 +161,26 @@ export function ensureLocalStudioSettings(settings: AppSettings): AppSettings {
   const activeProfileId = isUntouchedDefaultOpenAI(active) && existingProfileIds.has(LOCAL_GRSAI_PROFILE_ID)
     ? LOCAL_GRSAI_PROFILE_ID
     : settings.activeProfileId
+  // 文本配置存在时顺手把 Agent 切到混合模式，生图仍走 Grsai，对话走文本配置。
+  const hasTextProfile = profiles.some((profile) => profile.id === LOCAL_CHANSHUI_PROFILE_ID && profile.apiKey.trim())
+  const enablingAgent = settings.agentApiConfigMode === 'off' && hasTextProfile
+  const agentApiConfigMode = enablingAgent ? 'hybrid' : settings.agentApiConfigMode
+  const agentTextProfileId = enablingAgent
+    ? LOCAL_CHANSHUI_PROFILE_ID
+    : settings.agentTextProfileId
+  // 首次开启时把图像配置指向 Grsai，避免沿用默认的空白 OpenAI 配置。
+  const agentImageProfileId = enablingAgent
+    ? LOCAL_GRSAI_PROFILE_ID
+    : settings.agentImageProfileId
 
   return normalizeSettings({
     ...settings,
     customProviders,
     profiles,
     activeProfileId,
+    agentApiConfigMode,
+    agentTextProfileId,
+    agentImageProfileId,
   })
 }
+
